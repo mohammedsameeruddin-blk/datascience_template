@@ -1,0 +1,31 @@
+# Answers file (must be at the very top)
+_answers_file: ".copier-answers.yml"
+
+_min_copier_version: '9'
+_templates_suffix: .jinja
+_subdirectory: template
+_overwrite: true
+
+_repo: "https://github.com/mohammedsameeruddin-blk/datascience_template"
+_revision: feature/ds_template
+
+# Project info
+project:
+  type: str
+  help: "Enter data science project name (e.g., blk-customer)"
+
+# Ask every time to create a new model onboarding pipeline
+model:
+  type: str
+  help: "Enter new model name (e.g., customer)"
+
+user_email:
+  type: str
+  help: "Enter user_email (e.g., you@example.com)"
+
+# Force overwrite these files to merge pipelines
+_force:
+  - src/{{ model }}/**
+
+overwrite: true
+update: true
