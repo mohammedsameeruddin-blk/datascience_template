@@ -8,6 +8,9 @@ class BaseFeature(ABC):
     """
 
     @abstractmethod
-    def apply(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Apply feature transformation."""
+    def apply(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """Apply feature transformation.
+        Return: Return should be always as below:
+        {"dataframe": <df>, "impute_dict": <impute_dict>, "encoder": <encoder_dict>}
+        """
         raise NotImplementedError
