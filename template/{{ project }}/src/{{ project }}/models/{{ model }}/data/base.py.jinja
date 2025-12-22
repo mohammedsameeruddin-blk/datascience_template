@@ -1,0 +1,48 @@
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
+import pandas as pd
+
+
+class BasePreprocessor(ABC):
+    """
+    Base class for all data preprocessors.
+
+    Extension points:
+    - load()
+    - validate()
+    - transform()
+
+    DO NOT override:
+    - run()
+    """
+
+    def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
+        self.config = config or {}
+        self.runtime_args = kwargs
+
+    @abstractmethod
+    def load(self) -> Any:
+        """Load raw data (file, table, API, etc.)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def validate(self, data: Any) -> None:
+        """Validate raw input."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def transform(self, data: Any) -> pd.DataFrame:
+        """Transform raw input into model-ready dataframe."""
+        raise NotImplementedError
+    
+    def run(self) -> pd.DataFrame:
+        """Template method — do not override."""
+        raw = self.load()
+        self.validate(raw)
+        df = self.transform(raw)
+        self._validate_output(df)
+        return df
+    
+    def _validate_output(self, df: pd.DataFrame) -> None:
+        if df.empty:
+            raise ValueError("Preprocessed DataFrame is empty")

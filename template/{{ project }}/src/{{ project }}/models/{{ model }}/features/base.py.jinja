@@ -1,0 +1,13 @@
+from abc import ABC, abstractmethod
+import pandas as pd
+
+
+class BaseFeature(ABC):
+    """
+    Base class for a single feature transformation.
+    """
+
+    @abstractmethod
+    def apply(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply feature transformation."""
+        raise NotImplementedError

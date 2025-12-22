@@ -1,0 +1,49 @@
+from abc import ABC, abstractmethod
+import pandas as pd
+from typing import Any
+
+
+class BaseTrainer(ABC):
+    """
+    Base trainer template.
+
+    DO NOT override train().
+    """
+
+    def train(self, df: pd.DataFrame) -> Any:
+        X_train, X_val, y_train, y_val = self.split_data(df)
+
+        model = self.build_model()
+        model = self.train_model(model, X_train, y_train)
+
+        metrics = self.evaluate(model, X_val, y_val)
+
+        best_model = self.select_best_model(model, metrics)
+
+        final_model = self.final_train(best_model, df)
+
+        return final_model
+
+    @abstractmethod
+    def split_data(self, df: pd.DataFrame):
+        ...
+
+    @abstractmethod
+    def build_model(self):
+        ...
+
+    @abstractmethod
+    def train_model(self, model, X, y):
+        ...
+
+    @abstractmethod
+    def evaluate(self, model, X_val, y_val):
+        ...
+
+    @abstractmethod
+    def select_best_model(self, model, metrics):
+        ...
+
+    @abstractmethod
+    def final_train(self, model, df: pd.DataFrame):
+        ...
