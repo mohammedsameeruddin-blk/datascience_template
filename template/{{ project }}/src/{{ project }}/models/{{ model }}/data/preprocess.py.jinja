@@ -1,3 +1,28 @@
-# data cleaning methods
-# null check
-# applicable for training as well as inference
+import pandas as pd
+from .base import BasePreprocessor
+from ..configs.hyper_config import config as hyper_config
+
+
+
+class DataPreprocess(BasePreprocessor):
+    """
+    Write your preprocessing logic here.
+    Do NOT rename this class.
+    """
+    def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
+        self.config = hyper_config if config is None else config
+        self.data = kwargs.get("data")
+        super().__init__(config=self.config, data=kwargs.get("data"))
+
+    def load(self) -> pd.DataFrame:
+        ...
+
+    def validate(self, data: pd.DataFrame) -> None:
+        ...
+
+    def transform(self, data: pd.DataFrame) -> pd.DataFrame:
+        ...
+    
+    
+    
+

@@ -1,0 +1,16 @@
+from abc import ABC, abstractmethod
+import pandas as pd
+
+
+class BaseFeature(ABC):
+    """
+    Base class for a single feature transformation.
+    """
+
+    @abstractmethod
+    def apply(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """Apply feature transformation.
+        Return: Return should be always as below:
+        {"dataframe": <df>, "impute_dict": <impute_dict>, "encoder": <encoder_dict>}
+        """
+        raise NotImplementedError
