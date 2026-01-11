@@ -1,0 +1,52 @@
+import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
+
+from .base import BaseTransformer
+
+
+class OneHot(BaseTransformer):
+    """One Hot Encoder for categorical columns."""  
+
+    def __init__(self, cols: list):
+        """
+        Initialize OneHot encoder with specified columns.
+        Args:
+            cols (list): List of columns to be one-hot encoded.
+        """
+        self.cols = cols or []
+        self.encoder = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
+
+    def fit(self, df: pd.DataFrame) -> "OneHot":
+        """
+        Fit the encoder to the data.
+        Args:
+            df (pd.DataFrame): Input dataframe to fit the encoder.
+        Returns:
+            self: Fitted encoder instance.
+        """
+        self.effective_cols = [c for c in self.cols if c in df.columns]
+        if not self.effective_cols:
+            return self
+        self.encoder.fit(df[self.effective_cols])
+        return self
+
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transform the data by applying one-hot encoding.
+        
+        Args:
+            df (pd.DataFrame): Input dataframe to be transformed.
+        Returns:
+            pd.DataFrame: Transformed dataframe with one-hot encoded columns.
+        """
+        df = df.copy()
+        if not self.effective_cols:
+            return df
+        enc = self.encoder.transform(df[self.effective_cols])
+        enc_df = pd.DataFrame(
+            enc,
+            columns=self.encoder.get_feature_names_out(self.effective_cols),
+            index=df.index,
+        )
+        df = df.drop(self.effective_cols, axis=1)
+        return pd.concat([df, enc_df], axis=1)

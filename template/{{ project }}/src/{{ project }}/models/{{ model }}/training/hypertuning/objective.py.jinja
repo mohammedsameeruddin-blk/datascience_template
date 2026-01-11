@@ -1,0 +1,64 @@
+from copy import deepcopy
+
+import numpy as np
+from sklearn.model_selection import KFold
+
+
+from .metrics import model_metrics
+
+def hyperopt_objective(params,model_cls,X,y,tuning_params):
+    """
+    Hyperopt objective function for model hyperparameter tuning.
+    
+    Args:
+        params (dict): Hyperparameters to evaluate.
+        model_cls: Model class or object.
+        X (pd.DataFrame): Features dataframe.
+        y (pd.Series): Target variable series.
+        tuning_params (dict): Additional tuning parameters like k_inner, seed, etc.
+    Returns:
+        dict: Dictionary containing loss, status, metrics, and parameters.
+    """
+    
+    cv = KFold(
+        n_splits=tuning_params["k_inner"],
+        shuffle=True,
+        random_state=tuning_params["seed"],
+    )
+
+    accuracies = []
+    precisions = []
+    recalls = []
+    roc_aucs = []
+
+    for train_idx, val_idx in cv.split(X):
+        model = deepcopy(model_cls)
+        model.set_params(**params)
+
+        model.fit(X.iloc[train_idx], y.iloc[train_idx])
+
+        y_pred_proba = model.predict_proba(X.iloc[val_idx])[:, 1]
+
+        metrics = model_metrics(y.iloc[val_idx], y_pred_proba)
+
+        accuracies.append(metrics["accuracy"])
+        precisions.append(metrics["precision"])
+        recalls.append(metrics["recall"])
+        roc_aucs.append(metrics["roc_auc"])
+
+    mean_accuracy = float(np.mean(accuracies))
+    mean_precision = float(np.mean(precisions))
+    mean_recall = float(np.mean(recalls))
+    mean_roc_auc = float(np.mean(roc_aucs))
+
+    return {
+        "loss": 1 - mean_accuracy,
+        "status": "ok",
+        "metrics": {
+            "mean_accuracy": mean_accuracy,
+            "mean_precision": mean_precision,
+            "mean_recall": mean_recall,
+            "mean_roc_auc": mean_roc_auc,
+        },
+        "params": params,
+    }

@@ -1,2 +1,24 @@
 # model training configurations - hyperopt/hyperparameter tuning
-config ={}
+
+config = {
+    "model_type": "classification",  # takes either regression or classification
+    "model_params": {
+        "redu_col": [],
+        "target": [],
+        "cat_cols": [],
+        "onehot_cols": [],
+        "acceptance_criteria": 0.80,
+        "cluster_size": 4,
+        "seed": 42,
+        "test_ratio": 0.3,
+        "time_data": {"time_split": False},
+    },
+    "data_check": {
+        "passenger": {"not_null": True, "n_columns": 7},
+        "ticket": {"not_null": True, "n_columns": 6},
+    },
+    "models": {
+        "model1": {}
+    },
+}
+

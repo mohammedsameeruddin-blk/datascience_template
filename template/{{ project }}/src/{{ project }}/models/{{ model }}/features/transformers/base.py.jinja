@@ -1,0 +1,25 @@
+from abc import ABC, abstractmethod
+
+import pandas as pd
+
+
+class BaseTransformer(ABC):
+    """Base class for all data transformers."""
+
+    @abstractmethod
+    def fit(self, df: pd.DataFrame):
+        """Fit the transformer to the data.
+        Args:
+            df (pd.DataFrame): Input dataframe to fit the transformer.
+            
+        NOTE:Must return self
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        raise NotImplementedError
+
+    def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        self.fit(df)
+        return self.transform(df)
