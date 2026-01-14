@@ -1,0 +1,72 @@
+from .evaluator import evaluate_model
+from ...config.hyper_config import config
+import sklearn, xgboost, catboost
+
+
+class ModelEvaluator:
+    def __init__(self, train_df, tuning_results):
+        self.config = config
+        self.train_df = train_df
+        self.tuning_results = tuning_results
+
+    def _select_best_model(self, results):
+        metric = self.config["model_params"]["selection_metric"]
+        model_type = self.config["model_type"]
+
+        maximize_metrics = {"accuracy", "precision", "recall", "roc_auc", "r2"}
+
+        best_model = None
+        best_score = -float("inf") if metric in maximize_metrics else float("inf")
+
+        for model_name, res in results.items():
+            score = res["mean_metrics"][f"mean_{metric}"]
+
+            if metric in maximize_metrics:
+                if score > best_score:
+                    best_score = score
+                    best_model = model_name
+            else:
+                if score < best_score:
+                    best_score = score
+                    best_model = model_name
+
+        return best_model, best_score
+
+    def run(self):
+        target = self.config["model_params"]["target"]
+        drop_cols = self.config["model_params"]["redu_col"]
+        
+        X = self.train_df.drop(drop_cols, axis=1)
+        y = self.train_df[target]
+
+        evaluation_results = {}
+
+        for model_cfg in self.config["models"].values():
+            model_name = model_cfg["name"]
+            model_cls = eval(model_cfg["model"])
+            tuning_params = model_cfg["tuning_param"]
+
+            best_params = self.tuning_results[model_name]["best_params"]
+
+            eval_result = evaluate_model(
+                model_cls=model_cls,
+                best_params=best_params,
+                X=X,
+                y=y,
+                tuning_params=tuning_params,
+            )
+
+            evaluation_results[model_name] = {
+                "best_params": best_params,
+                "folds": eval_result["folds"],
+                "mean_metrics": eval_result["mean_metrics"],
+            }
+
+        best_model, best_score = self._select_best_model(evaluation_results)
+
+        return {
+            "models": evaluation_results,
+            "best_model": best_model,
+            "selection_metric": self.config["model_params"]["selection_metric"],
+            "selection_value": best_score,
+        }

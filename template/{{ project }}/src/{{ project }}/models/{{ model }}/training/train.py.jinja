@@ -1,5 +1,112 @@
-# data splitting - training and validation
-# hyperparameter object call
-# model evaluation object call
-# best model
-# final training with best model
+from copy import deepcopy
+import sklearn, xgboost, catboost
+
+from ..config.hyper_config import config
+from .model_utils import ml_metrics, feature_scaling
+
+
+
+class ModelTrainer:
+    """
+    Train the selected best model on train data and evaluate on train & test.
+    DS-only logic (no MLflow, no file IO).
+    """
+    def __init__(
+        self,
+        train_df,
+        test_df,
+        model_name,
+        best_params,
+        config=config,
+    ):
+        self.train_df = train_df
+        self.test_df = test_df
+        # Best model name
+        self.model_name = model_name
+        self.best_params = best_params
+        self.config = config
+
+
+    def run(self):
+        model_type = self.config["model_type"]
+        target = self.config["model_params"]["target"]
+        drop_cols = self.config["model_params"]["redu_col"]
+
+        X_train = self.train_df.drop(drop_cols, axis=1)
+        y_train = self.train_df[target]
+
+        X_test = self.test_df.drop(drop_cols, axis=1)
+        y_test = self.test_df[target]
+
+        # Feature scaling
+        X_train, X_test, scaler = feature_scaling(X_train, X_test)
+
+        # Resolve model
+        for model_cfg in self.config["models"].values():
+            if model_cfg["name"] == self.model_name:
+                model_cls = eval(model_cfg["model"])
+                break
+
+        model = deepcopy(model_cls)
+        model.set_params(**self.best_params)
+        model.fit(X_train, y_train)
+
+        # Evaluation
+        if model_type == "classification":
+            y_train_pred = model.predict_proba(X_train)[:, 1]
+            y_test_pred = model.predict_proba(X_test)[:, 1]
+
+            train_metrics = ml_metrics(y_train, y_train_pred)
+            test_metrics = ml_metrics(y_test, y_test_pred)
+
+            train_metrics_dict = {
+                "accuracy": train_metrics[0],
+                "precision": train_metrics[1],
+                "recall": train_metrics[2],
+                "roc_auc": train_metrics[3],
+            }
+
+            test_metrics_dict = {
+                "accuracy": test_metrics[0],
+                "precision": test_metrics[1],
+                "recall": test_metrics[2],
+                "roc_auc": test_metrics[3],
+            }
+
+        else:  # regression
+            y_train_pred = model.predict(X_train)
+            y_test_pred = model.predict(X_test)
+
+            train_metrics = ml_metrics(y_train, y_train_pred)
+            test_metrics = ml_metrics(y_test, y_test_pred)
+
+            train_metrics_dict = {
+                "mae": train_metrics[0],
+                "r2": train_metrics[1],
+                "mse": train_metrics[2],
+                "mape": train_metrics[3],
+            }
+
+            test_metrics_dict = {
+                "mae": test_metrics[0],
+                "r2": test_metrics[1],
+                "mse": test_metrics[2],
+                "mape": test_metrics[3],
+            }
+        
+        # Input example for MLflow signature
+        input_example = X_train.head(5)
+
+        return {
+            "model": model,
+            "scaler": scaler,
+            "model_name": self.model_name,
+            "params": self.best_params,
+            "metrics": {
+                "train": train_metrics_dict,
+                "test": test_metrics_dict,
+            },
+            "input_example": input_example,
+            "feature_columns": list(X_train.columns),
+            "model_type": model_type
+        }
