@@ -1,27 +1,53 @@
-from .evaluator import evaluate_model
-from ...config.hyper_config import config
 import sklearn, xgboost, catboost
+from .evaluator import evaluate_model
+from ...config.hyper_config import config, METRIC_DIRECTION
 
 
 class ModelEvaluator:
+    """
+    Evaluate multiple trained models using cross-validation results
+    and select the best-performing model based on a configured metric.
+    """
+
     def __init__(self, train_df, tuning_results):
+        """
+        Initialize the ModelEvaluator.
+
+        Args:
+            train_df (pd.DataFrame): Training dataset containing features
+                and target variable.
+            tuning_results (dict): Dictionary containing best hyperparameters
+                for each model obtained from the tuning stage.
+        """
         self.config = config
         self.train_df = train_df
         self.tuning_results = tuning_results
 
     def _select_best_model(self, results):
-        metric = self.config["model_params"]["selection_metric"]
+        """
+        Select the best model based on the configured selection metric.
+
+        Args:
+            results (dict): Dictionary of evaluation results for each model,
+                where each entry contains mean cross-validation metrics.
+
+        Returns:
+            tuple: A tuple containing:
+                - best_model (str): Name of the best-performing model
+                - best_score (float): Best value of the selection metric
+        """
         model_type = self.config["model_type"]
 
-        maximize_metrics = {"accuracy", "precision", "recall", "roc_auc", "r2"}
+        metric = self.config["model_params"]["selection_metric"]
+        direction = METRIC_DIRECTION[metric]
 
         best_model = None
-        best_score = -float("inf") if metric in maximize_metrics else float("inf")
+        best_score = -float("inf") if direction == "max" else float("inf")
 
         for model_name, res in results.items():
             score = res["mean_metrics"][f"mean_{metric}"]
 
-            if metric in maximize_metrics:
+            if direction == "max":
                 if score > best_score:
                     best_score = score
                     best_model = model_name
@@ -33,15 +59,28 @@ class ModelEvaluator:
         return best_model, best_score
 
     def run(self):
-        target = self.config["model_params"]["target"]
-        drop_cols = self.config["model_params"]["redu_col"]
-        
-        X = self.train_df.drop(drop_cols, axis=1)
-        y = self.train_df[target]
+        """
+        Run model evaluation for all configured models and select the best one.
+
+        This method evaluates each model using outer cross-validation,
+        aggregates performance metrics, and selects the best-performing
+        model based on the configured selection metric.
+
+        Returns:
+            dict: Evaluation summary containing:
+                - models (dict): Evaluation results for each model
+                - best_model (str): Name of the best-performing model
+                - selection_metric (str): Metric used for model selection
+                - selection_value (float): Best value of the selection metric
+        """
+        X = self.train_df.drop(
+            self.config["model_params"]["redu_col"], axis=1
+        )
+        y = self.train_df[self.config["model_params"]["target"]]
 
         evaluation_results = {}
 
-        for model_cfg in self.config["models"].values():
+        for model_key, model_cfg in self.config["models"].items():
             model_name = model_cfg["name"]
             model_cls = eval(model_cfg["model"])
             tuning_params = model_cfg["tuning_param"]
@@ -57,6 +96,7 @@ class ModelEvaluator:
             )
 
             evaluation_results[model_name] = {
+                "model_type": eval_result["model_type"],
                 "best_params": best_params,
                 "folds": eval_result["folds"],
                 "mean_metrics": eval_result["mean_metrics"],

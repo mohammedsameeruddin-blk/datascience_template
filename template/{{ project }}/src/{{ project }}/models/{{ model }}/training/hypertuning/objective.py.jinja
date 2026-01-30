@@ -1,64 +1,114 @@
-from copy import deepcopy
-
 import numpy as np
+from copy import deepcopy
 from sklearn.model_selection import KFold
+from ..model_utils import ml_metrics
+from ..model_utils import feature_scaling
+from ...config.hyper_config import config, METRIC_DIRECTION
 
 
-from .metrics import model_metrics
-
-def hyperopt_objective(params,model_cls,X,y,tuning_params):
+def hyperopt_objective(
+    params,
+    model_cls,
+    X,
+    y,
+    tuning_params,
+):
     """
-    Hyperopt objective function for model hyperparameter tuning.
-    
+    Objective function for hyperparameter optimization.
+
+    This function performs inner cross-validation using the provided
+    hyperparameters, evaluates model performance based on the configured
+    selection metric, and returns a loss value for optimization.
+
     Args:
-        params (dict): Hyperparameters to evaluate.
-        model_cls: Model class or object.
-        X (pd.DataFrame): Features dataframe.
-        y (pd.Series): Target variable series.
-        tuning_params (dict): Additional tuning parameters like k_inner, seed, etc.
+        params (dict): Hyperparameters to evaluate for the model.
+        model_cls: Uninitialized model class or estimator template.
+        X (pd.DataFrame): Feature matrix.
+        y (pd.Series): Target variable.
+        tuning_params (dict): Dictionary containing tuning configuration,
+            including number of inner folds and random seed.
+
     Returns:
-        dict: Dictionary containing loss, status, metrics, and parameters.
+        dict: Dictionary containing:
+            - loss (float): Optimization loss value.
+            - status (str): Optimization status (e.g., "ok").
+            - selection_metric (str): Metric used for optimization.
+            - selection_metric_value (float): Mean value of the selection metric.
+            - metrics (dict): Mean cross-validation metrics.
+            - params (dict): Evaluated hyperparameters.
     """
-    
+    model_type = config.get("model_type")
+    selection_metric = config["model_params"]["selection_metric"]
+
     cv = KFold(
         n_splits=tuning_params["k_inner"],
         shuffle=True,
         random_state=tuning_params["seed"],
     )
 
-    accuracies = []
-    precisions = []
-    recalls = []
-    roc_aucs = []
+    metrics_store = {
+        "accuracy": [],
+        "precision": [],
+        "recall": [],
+        "roc_auc": [],
+        "mae": [],
+        "mse": [],
+        "mape": [],
+        "r2": [],
+    }
 
     for train_idx, val_idx in cv.split(X):
+        X_train = X.iloc[train_idx].copy()
+        X_val = X.iloc[val_idx].copy()
+        y_train = y.iloc[train_idx]
+        y_val = y.iloc[val_idx]
+
+        X_train, X_val, _ = feature_scaling(X_train, X_val)
+
         model = deepcopy(model_cls)
         model.set_params(**params)
+        model.fit(X_train, y_train)
 
-        model.fit(X.iloc[train_idx], y.iloc[train_idx])
+        if model_type == "classification":
+            y_pred_proba = model.predict_proba(X_val)[:, 1]
+            accu, prec, rec, roc_auc = ml_metrics(y_val, y_pred_proba)
 
-        y_pred_proba = model.predict_proba(X.iloc[val_idx])[:, 1]
+            metrics_store["accuracy"].append(accu)
+            metrics_store["precision"].append(prec)
+            metrics_store["recall"].append(rec)
+            metrics_store["roc_auc"].append(roc_auc)
 
-        metrics = model_metrics(y.iloc[val_idx], y_pred_proba)
+        else:
+            y_pred = model.predict(X_val)
+            mae, r2, mse, mape = ml_metrics(y_val, y_pred)
 
-        accuracies.append(metrics["accuracy"])
-        precisions.append(metrics["precision"])
-        recalls.append(metrics["recall"])
-        roc_aucs.append(metrics["roc_auc"])
+            metrics_store["mae"].append(mae)
+            metrics_store["r2"].append(r2)
+            metrics_store["mse"].append(mse)
+            metrics_store["mape"].append(mape)
 
-    mean_accuracy = float(np.mean(accuracies))
-    mean_precision = float(np.mean(precisions))
-    mean_recall = float(np.mean(recalls))
-    mean_roc_auc = float(np.mean(roc_aucs))
+    # Aggregation
+    mean_metrics = {
+        k: float(np.mean(v)) for k, v in metrics_store.items() if v
+    }
+
+    selected_value = mean_metrics[selection_metric]
+
+    # Calculate loss
+    direction = METRIC_DIRECTION.get(selection_metric)
+    if direction is None:
+        raise ValueError(f"Unsupported selection_metric: {selection_metric}")
+
+    if direction == "max":
+        loss = 1 - selected_value  # maximize
+    else:
+        loss = selected_value  # minimize
 
     return {
-        "loss": 1 - mean_accuracy,
+        "loss": loss,
         "status": "ok",
-        "metrics": {
-            "mean_accuracy": mean_accuracy,
-            "mean_precision": mean_precision,
-            "mean_recall": mean_recall,
-            "mean_roc_auc": mean_roc_auc,
-        },
+        "selection_metric": selection_metric,
+        "selection_metric_value": selected_value,
+        "metrics": mean_metrics,
         "params": params,
     }

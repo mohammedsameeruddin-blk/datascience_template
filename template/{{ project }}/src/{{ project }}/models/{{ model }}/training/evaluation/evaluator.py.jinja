@@ -12,6 +12,29 @@ def evaluate_model(
     y,
     tuning_params,
 ):
+    """
+    Evaluate a trained model using outer cross-validation.
+
+    This function performs model evaluation using K-Fold cross-validation
+    with the best hyperparameters obtained from tuning. It supports both
+    classification and regression based on the global configuration.
+
+    Args:
+        model_cls: Model class or initialized model object to be evaluated.
+        best_params (dict): Best hyperparameters obtained from tuning.
+        X (pd.DataFrame): Feature dataframe.
+        y (pd.Series): Target variable.
+        tuning_params (dict): Dictionary containing evaluation parameters such
+            as number of folds and random seed.
+
+    Returns:
+        dict: Evaluation results containing:
+            - model_type (str): Type of model (classification or regression)
+            - folds (list): Per-fold evaluation metrics
+            - mean_metrics (dict): Mean metrics across folds
+            - selection_metric (str): Metric used for model selection
+            - selection_metric_value (float): Mean value of selection metric
+    """
     model_type = config["model_type"]
     selection_metric = config["model_params"]["selection_metric"]
 
@@ -85,6 +108,7 @@ def evaluate_model(
     }
 
     return {
+        "model_type": model_type,
         "folds": fold_results,
         "mean_metrics": mean_metrics,
         "selection_metric": selection_metric,

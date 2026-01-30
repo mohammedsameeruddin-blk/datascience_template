@@ -19,6 +19,14 @@ model:
   type: str
   help: "Enter new model name (e.g., customer)"
 
+# Ask every time to create a new model onboarding pipeline
+model_type:
+  type: choice
+  choices:
+    - regression
+    - classification
+  help: "Select the model type"
+
 user_email:
   type: str
   help: "Enter user_email (e.g., you@example.com)"

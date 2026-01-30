@@ -1,0 +1,81 @@
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
+import pandas as pd
+
+
+class BaseScorer(ABC):
+    """
+    Base class for all model scoring logic.
+
+    Extension points:
+    - load()
+    - prepare_features()
+    - score()
+
+    DO NOT override:
+    - run()
+    """
+
+    model_name: str = "unknown"
+    version: str = "v1"
+
+    def __init__(
+        self,
+        *,
+        model,
+        scaler=None,
+        config: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ):
+        self.model = model
+        self.scaler = scaler
+        self.config = config or {}
+        self.runtime_args = kwargs
+
+    @abstractmethod
+    def load(self) -> Any:
+        """Load input data for scoring."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def prepare_features(self, data: Any) -> pd.DataFrame:
+        """Convert input data into model-ready dataframe."""
+        raise NotImplementedError
+
+    def apply_scaling(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply scaler if present."""
+        if self.scaler:
+            num_cols = self.config["model_params"].get("num_cols", [])
+            if num_cols:
+                df[num_cols] = self.scaler.transform(df[num_cols])
+        return df
+
+    def score(self, df: pd.DataFrame):
+        """Default scoring logic."""
+        if self.config["model_type"] == "classification":
+            return self.model.predict_proba(df)[:, 1]
+        return self.model.predict(df)
+
+    def post_score_hook(
+        self, df: pd.DataFrame, predictions
+    ) -> pd.DataFrame:
+        """Attach predictions or enrich output."""
+        result = df.copy()
+        result["prediction"] = predictions
+        return result
+
+    def run(self) -> pd.DataFrame:
+        """Template method — DO NOT override."""
+        raw = self.load()
+        features = self.prepare_features(raw)
+        features = self.apply_scaling(features)
+
+        predictions = self.score(features)
+        result_df = self.post_score_hook(features, predictions)
+
+        self._validate_output(result_df)
+        return result_df
+
+    def _validate_output(self, df: pd.DataFrame) -> None:
+        if df.empty:
+            raise ValueError("Scoring output is empty")
