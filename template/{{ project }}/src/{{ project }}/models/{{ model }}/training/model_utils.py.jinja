@@ -1,0 +1,60 @@
+import numpy as np
+from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, precision_score, mean_absolute_error, r2_score, mean_squared_error, mean_absolute_percentage_error
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+from ..config.hyper_config import config
+
+def ml_metrics(actual, pred, config=config):
+    '''
+    Evaluate the result by considering actual output and predicted output
+    :param actual: Ground truth
+    :param pred: Observed truth
+
+    Returns
+    -------
+    Tuple
+    '''
+    model_type = config.get('model_type')
+    
+    if model_type == 'classification':
+        # metrics for classifcation model
+        pred_cls = np.where(pred > 0.5,1,0)
+        accu = accuracy_score(actual,pred_cls)
+        prec = precision_score(actual, pred_cls)
+        rec = recall_score(actual, pred_cls)
+        roc_auc = roc_auc_score(actual, pred)
+        return accu, prec, rec, roc_auc
+    
+    elif model_type == 'regression':
+        # metrics for regression model
+        mae = mean_absolute_error(actual,pred)
+        r2_fit = r2_score(actual, pred)
+        mse = mean_squared_error(actual, pred)
+        mape = mean_absolute_percentage_error(actual, pred)
+        return mae, r2_fit, mse, mape
+    
+    return None
+
+
+def feature_scaling(df_train, df_test, config=config):
+    '''
+    Scale the features - preprocessing
+    :param df_train: Training data
+    :param df_test: Test data
+    :param sel_cols: List of selected columns
+
+    Returns
+    -------
+    Tuple
+    '''
+    if config["model_params"]["scaler"] == "standard":
+        sc = StandardScaler()
+    elif config["model_params"]["scalar"] == "min_max":
+        sc = MinMaxScaler()
+    else:
+        sc = StandardScaler()
+    
+    selected_columns = config["model_params"]["num_cols"]
+    df_train[selected_columns] = sc.fit_transform(df_train[selected_columns])
+    df_test[selected_columns] = sc.transform(df_test[selected_columns])
+    return df_train, df_test, sc

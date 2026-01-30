@@ -1,0 +1,104 @@
+from functools import partial
+
+import numpy as np
+from pydoc import locate
+from hyperopt import Trials, fmin, space_eval, tpe
+import pandas as pd
+
+from ...config.hyper_config import config as hyper_config
+from .objective import hyperopt_objective
+
+
+class HyperparameterTuner:
+    """Generic hyperparameter tuner that works for classification and regression.
+
+    Expects `config["models"]` entries to include:
+      - name: human readable name
+      - model: either a class/object or a string import path (e.g. "sklearn.linear_model.LogisticRegression")
+      - hyperparameters: hyperopt search space
+      - tuning_param or tuning_params: dict with keys like `max_iter`, `k_inner`, `seed`, `scoring` (optional)
+    """
+
+    def __init__(self, train_df: pd.DataFrame, config: dict=None):
+        """
+        Initialize the HyperparameterTuner with training dataframe and configuration.
+        Args:
+            train_df (pd.DataFrame): Training dataframe.
+            config (dict, optional): Configuration dictionary. Defaults to hyper_config.
+        Raises:
+            AssertionError: If configuration is None.
+        """
+        self.config = config or hyper_config
+        assert self.config is not None, "Configuration cannot be None"
+        self.train_df = train_df
+
+    def _resolve_model(self, model_spec ):
+        """
+        Resolve the model specification to a class or object.
+        Args:
+        """
+        # Accept either a string import path or a class/object
+        if isinstance(model_spec, str):
+            cls_or_obj = locate(model_spec)
+            if cls_or_obj is None:
+                # fallback to eval for legacy configs
+                cls_or_obj = eval(model_spec)
+            return cls_or_obj
+        return model_spec
+
+    def run(self):
+        """
+        Run hyperparameter tuning for all models specified in the configuration.
+        
+        Returns:
+            dict: A dictionary with model names as keys and their best parameters and losses.
+        """
+        
+        results = {}
+
+        X = self.train_df.drop(self.config["model_params"]["redu_col"], axis=1)
+        y = self.train_df[self.config["model_params"]["target"]]
+
+        for model_key, model_cfg in self.config["models"].items():
+            model_name = model_cfg.get("name", model_key)
+            model_spec = model_cfg.get("model")
+            
+            assert model_spec is not None, f"Model specification is required for {model_name}"
+            
+            model_cls = self._resolve_model(model_spec)
+
+            search_space = model_cfg.get("hyperparameters", {})
+            tuning_params = model_cfg.get("tuning_params") or model_cfg.get("tuning_param") or {}
+
+            trials = Trials()
+            
+            objective_fn = partial(
+                hyperopt_objective,
+                model_cls=model_cls,
+                X=X,
+                y=y,
+                tuning_params=tuning_params,
+                model_type=self.config.get("model_type", "classification"),
+            )
+
+            best = fmin(
+                fn=objective_fn,
+                space=search_space,
+                algo=tpe.suggest,
+                max_evals=tuning_params.get("max_iter", 50),
+                trials=trials,
+                rstate=np.random.default_rng(self.config["model_params"].get("seed", 42)),
+            )
+
+            best_params = space_eval(search_space, best)
+
+            losses = [r.get("loss") for r in trials.results if r and r.get("loss") is not None]
+            results[model_name] = {
+                "best_params": best_params,
+                "best_loss": min(losses) if losses else None,
+                "trials": trials.results,
+            }
+
+        return results
+
+
