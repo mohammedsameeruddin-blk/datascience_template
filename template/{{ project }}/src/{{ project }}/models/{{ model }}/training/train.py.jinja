@@ -105,8 +105,8 @@ class ModelTrainer:
 
         # Evaluation
         if model_type == "classification":
-            y_train_pred = model.predict_proba(X_train)[:, 1]
-            y_test_pred = model.predict_proba(X_test)[:, 1]
+            y_train_pred = model.predict(X_train)
+            y_test_pred = model.predict(X_test)
 
             train_metrics = ml_metrics(y_train, y_train_pred)
             test_metrics = ml_metrics(y_test, y_test_pred)

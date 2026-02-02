@@ -51,9 +51,11 @@ class BaseScorer(ABC):
         return df
 
     def score(self, df: pd.DataFrame):
-        """Default scoring logic."""
-        if self.config["model_type"] == "classification":
-            return self.model.predict_proba(df)[:, 1]
+        """
+        Default scoring logic.
+        Returns class labels for classification
+        and numeric predictions for regression.
+        """
         return self.model.predict(df)
 
     def post_score_hook(

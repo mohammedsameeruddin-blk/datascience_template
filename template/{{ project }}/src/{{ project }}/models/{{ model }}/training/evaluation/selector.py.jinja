@@ -57,6 +57,23 @@ class ModelEvaluator:
                     best_model = model_name
 
         return best_model, best_score
+    
+    def _resolve_model(self, model_spec):
+        """
+        Resolve model specification into a callable model class or object.
+
+        Args:
+            model_spec (str | object): Model class or import path.
+
+        Returns:
+            object: Resolved model class or instance.
+        """
+        if isinstance(model_spec, str):
+            cls_or_obj = locate(model_spec)
+            if cls_or_obj is None:
+                cls_or_obj = eval(model_spec)  # legacy fallback
+            return cls_or_obj
+        return model_spec
 
     def run(self):
         """
@@ -81,11 +98,17 @@ class ModelEvaluator:
         evaluation_results = {}
 
         for model_key, model_cfg in self.config["models"].items():
-            model_name = model_cfg["name"]
-            model_cls = eval(model_cfg["model"])
+            model_name = model_cfg.get("name", model_key)
+            model_spec = model_cfg.get("model")
+            
+            assert model_spec is not None, (
+                f"Model specification missing for {model_name}"
+            )
+            
             tuning_params = model_cfg["tuning_param"]
-
             best_params = self.tuning_results[model_name]["best_params"]
+
+            model_cls = self._resolve_model(model_spec)
 
             eval_result = evaluate_model(
                 model_cls=model_cls,
