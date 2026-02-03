@@ -1,9 +1,14 @@
 from functools import partial
 
 import numpy as np
+import pandas as pd
+
+import sklearn  # noqa: F401
+import xgboost  # noqa: F401
+import catboost  # noqa: F401
+
 from pydoc import locate
 from hyperopt import Trials, fmin, space_eval, tpe
-import pandas as pd
 
 from ...config.hyper_config import config as hyper_config
 from .objective import hyperopt_objective
