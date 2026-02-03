@@ -31,11 +31,9 @@ config = {
         "time_data": {"time_split": False},
 
         {% if model_type == "classification" %}
-        "selection_metric": "roc_auc",
-        "selection_mode": "maximize",
+        "selection_metric": "roc_auc", # change the metric as per the requirement from the above lookup
         {% else %}
-        "selection_metric": "rmse",
-        "selection_mode": "minimize",
+        "selection_metric": "rmse", # change the metric as per the requirement from the above lookup
         {% endif %}
 
         "scaler": "standard"
