@@ -21,7 +21,7 @@ model:
 
 # Ask every time to create a new model onboarding pipeline
 model_type:
-  type: choice
+  type: str
   choices:
     - regression
     - classification
