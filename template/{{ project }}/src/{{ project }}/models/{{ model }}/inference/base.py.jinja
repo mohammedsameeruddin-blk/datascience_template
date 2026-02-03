@@ -77,7 +77,8 @@ class BaseScorer(ABC):
         # Store ID column from raw data before prepare_features
         id_col = self.config.get("id_col", None)
         if id_col and id_col in raw.columns:
-            self._id_value = raw[id_col].copy()
+            # store as strings to preserve ID semantics across transforms
+            self._id_value = raw[id_col].astype(str).copy()
             self._id_col = id_col
         
         features = self.prepare_features(raw)
