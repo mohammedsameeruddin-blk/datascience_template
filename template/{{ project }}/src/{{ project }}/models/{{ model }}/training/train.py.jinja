@@ -55,10 +55,10 @@ class ModelTrainer:
             ValueError: If model cannot be resolved.
         """
         if isinstance(model_spec, str):
-            model_cls = locate(model_spec)
-            if model_cls is None:
-                raise ValueError(f"Unable to locate model: {model_spec}")
-            return model_cls
+            cls_or_obj = locate(model_spec)
+            if cls_or_obj is None:
+                cls_or_obj = eval(model_spec)  # legacy fallback
+            return cls_or_obj
         return model_spec
 
     def run(self) -> Dict[str, Any]:
