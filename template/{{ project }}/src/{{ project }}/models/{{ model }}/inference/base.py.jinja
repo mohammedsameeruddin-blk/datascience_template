@@ -62,13 +62,24 @@ class BaseScorer(ABC):
         self, df: pd.DataFrame, predictions
     ) -> pd.DataFrame:
         """Attach predictions or enrich output."""
-        result = df.copy()
-        result["prediction"] = predictions
+        result = pd.DataFrame({"prediction": predictions})
+        
+        # If ID column was stored, add it to the result
+        if hasattr(self, "_id_value") and hasattr(self, "_id_col"):
+            result.insert(0, self._id_col, self._id_value.values)
+        
         return result
 
     def run(self) -> pd.DataFrame:
         """Template method — DO NOT override."""
         raw = self.load()
+        
+        # Store ID column from raw data before prepare_features
+        id_col = self.config.get("id_col", None)
+        if id_col and id_col in raw.columns:
+            self._id_value = raw[id_col].copy()
+            self._id_col = id_col
+        
         features = self.prepare_features(raw)
         features = self.apply_scaling(features)
 
