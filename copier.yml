@@ -1,25 +1,45 @@
-# Answers file (must be at the very top)
-_answers_file: ".copier-answers.yml"
-
 _min_copier_version: '9'
 _templates_suffix: .jinja
 _subdirectory: template
 _overwrite: true
+_envops:
+  autoescape: false
+  keep_trailing_newline: true
+  trim_blocks: true
+  lstrip_blocks: true
+_jinja_extensions:
+  - copier_templates_extensions.TemplateExtensionLoader
+  - jinja_extensions.py:ContextUpdater
+  - jinja_extensions.py:CurrentYearExtension
+  - jinja_extensions.py:GitExtension
+  - jinja_extensions.py:StringExtension
+  - jinja_extensions.py:PythonVersionExtension
 
 _repo: "https://github.com/mohammedsameeruddin-blk/datascience_template"
 _revision: feature/ds_template
 
+_message_before_copy: |
+  Thanks for using our datascience template to bootstrap your new project.
+
+  Please, reply to the question carefully as the answers will be used to configure the scaffold of your project.
+
 # Project info
 project:
   type: str
-  help: "Enter data science project name (e.g., blk-customer)"
-  regex: "^[a-zA-Z][a-zA-Z0-9_-]*$"
+  help: "Your project name (e.g., customer_churn_prediction)"
+  validator: >-
+    {% if not project or project | regex_search('[^a-zA-Z0-9_-]') %}
+    project must contain letters, numbers, dashes and underscores.
+    {% endif %}
 
 # Ask every time to create a new model onboarding pipeline
 model:
   type: str
-  help: "Enter new model name (e.g., customer)"
-  regex: "^[a-zA-Z][a-zA-Z0-9_-]*$"
+  help: "Your model name (e.g., customer)"
+  validator: >-
+    {% if not model or model | regex_search('[^a-zA-Z0-9_-]') %}
+    model must contain letters, numbers, dashes and underscores.
+    {% endif %}
 
 # Ask every time to create a new model onboarding pipeline
 model_type:
@@ -29,14 +49,14 @@ model_type:
     - classification
   help: "Select the model type"
 
-user_email:
+author_email:
   type: str
-  help: "Enter user_email (e.g., you@example.com)"
-  regex: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+  help: "Your email address"
+  validator: >-
+    {% if not (author_email | regex_search('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'))
+    %}
+    author_email is not a valid email address.
+    {% endif %}
 
-# Force overwrite these files to merge pipelines
-_force:
-  - src/{{ model }}/**
-
-overwrite: true
-update: true
+_message_after_copy: |
+  Congratulations! Your project has been successfully created!
