@@ -20,7 +20,7 @@ _message_before_copy: |
 # Project info
 project:
   type: str
-  help: "Your project name (e.g., customer_churn_prediction)"
+  help: "Your project name (without prefixes like ds_, ds-, etc)"
   validator: >-
     {% if not project or project | regex_search('[^a-zA-Z0-9_-]') %}
     project must contain letters, numbers, dashes and underscores.
@@ -39,8 +39,8 @@ model:
 model_type:
   type: str
   choices:
-    - regression
-    - classification
+    - Regression
+    - Classification
   help: "Select the model type"
 
 author_email:
