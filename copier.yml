@@ -7,13 +7,6 @@ _envops:
   keep_trailing_newline: true
   trim_blocks: true
   lstrip_blocks: true
-_jinja_extensions:
-  - copier_templates_extensions.TemplateExtensionLoader
-  - jinja_extensions.py:ContextUpdater
-  - jinja_extensions.py:CurrentYearExtension
-  - jinja_extensions.py:GitExtension
-  - jinja_extensions.py:StringExtension
-  - jinja_extensions.py:PythonVersionExtension
 
 _repo: "https://github.com/mohammedsameeruddin-blk/datascience_template"
 _revision: feature/ds_template
