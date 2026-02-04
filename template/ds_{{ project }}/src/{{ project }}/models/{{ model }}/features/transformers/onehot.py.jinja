@@ -16,7 +16,7 @@ class OneHot(BaseTransformer):
         self.cols = cols or []
         self.encoder = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
 
-    def fit(self, df: pd.DataFrame) -> "OneHot":
+    def fit(self, df: pd.DataFrame) -> OneHot:
         """
         Fit the encoder to the data.
         Args:

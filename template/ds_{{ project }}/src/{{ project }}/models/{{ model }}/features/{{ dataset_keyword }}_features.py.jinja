@@ -4,8 +4,10 @@ from .transformers.onehot import OneHot
 from ..config.hyper_config import config
 
 
-class DataFeatures:
+class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | replace(' ', '') }}Features:
     """Feature engineering and transformation class."""
+
+    dataset_name = "{{ dataset_keyword }}"
     
     def __init__(self):
         """

@@ -6,10 +6,10 @@ from ..config.hyper_config import config as hyper_config
 from .base import BasePreprocessor
 
 
-class DataPreprocess(BasePreprocessor):
+class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | replace(' ', '') }}Preprocess(BasePreprocessor):
     """Data Preprocessor"""
 
-    dataset_name = "name_of_the_dataset"
+    dataset_name = "{{ dataset_keyword }}"
 
     def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
         """Add attributes for the Data Preprocess like configurations and dataframe/data.
