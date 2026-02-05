@@ -9,7 +9,9 @@ description = "CLI tool for managing data science projects"
 readme = "README.md"
 requires-python = ">=3.10"
 
-authors = [{ name = "DataScience Team" }]
+authors = [
+    { name = "DataScience Team" }
+]
 
 dependencies = [
     "click>=8.0.0",
@@ -23,6 +25,9 @@ ds-cli = "ds_cli.main:cli"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ds_cli*"]
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.package-data]
 ds_cli = ["templates/**/*.jinja"]

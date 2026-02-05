@@ -1,0 +1,1 @@
+recursive-include ds_cli/templates *.jinja

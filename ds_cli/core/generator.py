@@ -16,7 +16,7 @@ class DatasetFileGenerator:
         self.preprocess_dir = project_root / "dataflow" / "preprocess"
         self.features_dir = project_root / "dataflow" / "features"
 
-        templates_dir = Path(__file__).parent / "templates" / "dataset"
+        templates_dir = Path(__file__).resolve().parents[1] / "templates" / "dataset"
         self.env = Environment(loader=FileSystemLoader(templates_dir))
 
     def generate(self, dataset_name: str) -> list[Path]:
