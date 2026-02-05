@@ -8,9 +8,11 @@ version = "0.1.0"
 description = "CLI tool for managing data science projects - add datasets, models, and more"
 readme = "README.md"
 requires-python = ">=3.10"
+
 authors = [
     {name = "DataScience Team"}
 ]
+
 dependencies = [
     "click>=8.0.0",
     "pydantic>=1.8.0",
