@@ -41,7 +41,7 @@ def add_dataset(project_path: str, dataset_name: str, model: str):
         click.echo(f"{Fore.CYAN}Single model detected: {target_model}{Style.RESET_ALL}")
     else:
         if model is None:
-            click.echo(f"{Fore.YELLOW}Multiple models found. Please select:"){Style.RESET_ALL}")
+            click.echo(f"{Fore.YELLOW}Multiple models found. Please select:{Style.RESET_ALL}")
             for i, m in enumerate(models, 1):
                 click.echo(f"  {i}. {m}")
             choice = click.prompt("Enter model number", type=click.IntRange(1, len(models)))
