@@ -14,16 +14,24 @@ class ProjectDiscovery:
 
     def is_valid_project(self) -> bool:
         """Check if the directory is a valid data science project"""
-        return (self.src_path.exists() and 
-                (self.src_path / "*/models").exists())
+        # return (self.src_path.exists() and 
+        #         (self.src_path / "*/models").exists())
+        return any(
+            d.is_dir() and (d / "models").exists()
+            for d in self.src_path.iterdir()
+        )
 
     def get_project_name(self) -> Optional[str]:
         """Extract project name from directory structure"""
-        if not self.src_path.exists():
-            return None
-        
-        subdirs = [d for d in self.src_path.iterdir() if d.is_dir()]
-        return subdirs[0].name if subdirs else None
+        # if not self.src_path.exists():
+        #     return None
+        # subdirs = [d for d in self.src_path.iterdir() if d.is_dir()]
+        # return subdirs[0].name if subdirs else None
+
+        for d in self.src_path.iterdir():
+            if d.is_dir() and (d / "models").exists():
+                return d.name
+        return None
 
     def get_models(self) -> List[str]:
         """Get list of available models in the project"""
