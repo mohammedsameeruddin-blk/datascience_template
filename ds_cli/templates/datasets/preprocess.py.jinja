@@ -1,0 +1,63 @@
+
+from typing import Any, Dict, Optional
+
+import pandas as pd
+
+from ..config.hyper_config import config as hyper_config
+from .base import BasePreprocessor
+
+
+class {{ dataset_class }}Preprocess(BasePreprocessor):
+    """Data Preprocessor"""
+
+    dataset_name = "{{ dataset_name }}"
+
+    def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
+        """Add attributes for the Data Preprocess like configurations and dataframe/data.
+
+        Args:
+            config (Optional[Dict[str, Any]], optional):Hyper configurations or configs for data preprocessing.
+                                                        Defaults to None.
+                                                        
+            **kwargs: Arbitrary keyword arguments.
+        
+        Raises:
+            AssertionError: If data argument is not provided in kwargs.
+        """
+        self.config = hyper_config if config is None else config
+        
+        assert kwargs.get("data") is not None, "data argument is required"
+        self.data = kwargs.get("data")
+        
+        super().__init__(config=self.config, data=kwargs.get("data"))
+
+    def load(self) -> pd.DataFrame:
+        """Load raw data (file, table, API, etc.).
+        Returns:
+            pd.DataFrame: Loaded dataframe.
+        """
+        if self.data is not None:
+            return self.data
+
+
+    def validate(self, data: pd.DataFrame) -> None:
+        """Add all your validations and raise error if validations doesn't meet.
+
+        Args:
+            data (pd.DataFrame): Input dataframe to be validated.
+        """
+        df  = data.copy()
+        
+        # 1. output of data extraction function is dataframe
+        assert isinstance(
+            df, pd.DataFrame
+        ), f"function expects a dataframe but got {type(df)}"
+
+    def transform(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Transform raw input into model-ready dataframe.
+        Args:
+            data (pd.DataFrame): Input dataframe to be transformed.
+        Returns:
+            pd.DataFrame: Transformed dataframe.
+        """
+        return data
