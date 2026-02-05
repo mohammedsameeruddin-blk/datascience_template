@@ -29,7 +29,7 @@ def add_dataset(project_path: str, dataset_name: str):
     click.echo(f"{Fore.CYAN}Analyzing project structure...{Style.RESET_ALL}")
     click.echo(f"{Fore.GREEN}✓ Project: {project_root.name}{Style.RESET_ALL}\n")
 
-    # Discover existing datasets
+    # Existing datasets (for collision check only)
     existing_datasets = discovery.get_datasets()
 
     click.echo(
@@ -48,37 +48,11 @@ def add_dataset(project_path: str, dataset_name: str):
         )
         raise click.Abort()
 
-    # Template selection
-    if not existing_datasets:
-        click.echo(
-            f"{Fore.RED}Error: No existing datasets available to use as template{Style.RESET_ALL}"
-        )
-        raise click.Abort()
-
-    if len(existing_datasets) == 1:
-        template_dataset = existing_datasets[0]
-        click.echo(
-            f"{Fore.CYAN}Using '{template_dataset}' as template{Style.RESET_ALL}\n"
-        )
-    else:
-        click.echo(f"{Fore.YELLOW}Select template dataset:{Style.RESET_ALL}")
-        for i, ds in enumerate(existing_datasets, 1):
-            click.echo(f"  {i}. {ds}")
-
-        choice = click.prompt(
-            "Enter dataset number",
-            type=click.IntRange(1, len(existing_datasets)),
-        )
-        template_dataset = existing_datasets[choice - 1]
-
-    # Generate dataset files (Jinja-based)
+    # Generate dataset files (Jinja only)
     generator = DatasetFileGenerator(project_root)
 
     click.echo(f"{Fore.CYAN}Creating dataset files...{Style.RESET_ALL}")
-    created_files = generator.generate(
-        template_dataset=template_dataset,
-        new_dataset=dataset_name,
-    )
+    created_files = generator.generate(dataset_name)
 
     # Report results
     click.echo(
@@ -89,6 +63,6 @@ def add_dataset(project_path: str, dataset_name: str):
         click.echo(f"  • {file_path.relative_to(project_path)}")
 
     click.echo(f"\n{Fore.YELLOW}Next steps:{Style.RESET_ALL}")
-    click.echo("  1. Review and update the generated files")
+    click.echo("  1. Review the generated files")
     click.echo("  2. Register the dataset in configs if required")
     click.echo("  3. Use the dataset in model training/inference")
