@@ -68,7 +68,7 @@ def evaluate_model(
         model.set_params(**best_params)
         model.fit(X_train, y_train)
 
-        if model_type == "classification":
+        if model_type == "Classification":
             y_pred_proba = model.predict(X_test)
             accu, prec, rec, roc_auc = ml_metrics(y_test, y_pred_proba)
 

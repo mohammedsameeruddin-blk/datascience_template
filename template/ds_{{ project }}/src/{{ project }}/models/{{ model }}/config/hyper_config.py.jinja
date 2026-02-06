@@ -32,7 +32,7 @@ config = {
         "test_ratio": 0.3,
         "time_data": {"time_split": False},
 
-        {% if model_type == "classification" %}
+        {% if model_type == "Classification" %}
         "selection_metric": "roc_auc", # change the metric as per the requirement from the above lookup
         {% else %}
         "selection_metric": "rmse", # change the metric as per the requirement from the above lookup
@@ -46,7 +46,7 @@ config = {
         "model1": {
             "name": "RandomForest",
 
-            {% if model_type == "classification" %}
+            {% if model_type == "Classification" %}
             "model": "sklearn.ensemble.RandomForestClassifier()",
             {% else %}
             "model": "sklearn.ensemble.RandomForestRegressor()",
@@ -72,7 +72,7 @@ config = {
         "model2": {
             "name": "XGBoost",
 
-            {% if model_type == "classification" %}
+            {% if model_type == "Classification" %}
             "model": "xgboost.XGBClassifier()",
             {% else %}
             "model": "xgboost.XGBRegressor()",
@@ -97,7 +97,7 @@ config = {
         "model3": {
             "name": "CatBoost",
 
-            {% if model_type == "classification" %}
+            {% if model_type == "Classification" %}
             "model": "catboost.CatBoostClassifier()",
             {% else %}
             "model": "catboost.CatBoostRegressor()",

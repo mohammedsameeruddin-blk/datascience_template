@@ -104,7 +104,7 @@ class ModelTrainer:
         model.fit(X_train, y_train)
 
         # Evaluation
-        if model_type == "classification":
+        if model_type == "Classification":
             y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
 
