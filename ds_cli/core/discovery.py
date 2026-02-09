@@ -36,8 +36,13 @@ class ProjectDiscovery:
 
         datasets = set()
 
+        config_dir = project / "dataflow" / "config"
         preprocess_dir = project / "dataflow" / "preprocess"
         features_dir = project / "dataflow" / "features"
+
+        if config_dir.exists():
+            for f in config_dir.glob("*_config.py"):
+                datasets.add(f.stem.replace("_config", ""))
 
         if preprocess_dir.exists():
             for f in preprocess_dir.glob("*_preprocess.py"):
