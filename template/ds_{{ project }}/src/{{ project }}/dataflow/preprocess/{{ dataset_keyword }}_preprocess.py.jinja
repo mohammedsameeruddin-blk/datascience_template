@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 
-from ..config.hyper_config import config as hyper_config
+from ..config.{{ dataset_keyword }}_config import {{ dataset_keyword | upper }}_CONFIG as data_config
 from .base import BasePreprocessor
 
 
@@ -23,7 +23,7 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
         Raises:
             AssertionError: If data argument is not provided in kwargs.
         """
-        self.config = hyper_config if config is None else config
+        self.config = data_config if config is None else config
         
         assert kwargs.get("data") is not None, "data argument is required"
         self.data = kwargs.get("data")

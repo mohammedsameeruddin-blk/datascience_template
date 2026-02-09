@@ -21,11 +21,19 @@ config = {
     "id_col": "", # add the unique identifier column name if any
 
     "model_params": {
-        "redu_col": [],
+        # Target variable name
         "target": [],
+        
+        # Numerical columns combined from all datasets used in this model
+        # Used for feature scaling during hyperparameter tuning and training
+        # Example: ["Age", "SibSp", "Parch", "Fare"]
         "num_cols": [],
-        "cat_cols": [],
-        "onehot_cols": [],
+        
+        # Columns to drop after feature engineering combined from all datasets
+        # These are not used for model training
+        # Example: ["PassengerId", "Name", "Ticket", "Cabin"]
+        "redu_col": [],
+        
         "acceptance_criteria": 0.80,
         "cluster_size": 4,
         "seed": 42,

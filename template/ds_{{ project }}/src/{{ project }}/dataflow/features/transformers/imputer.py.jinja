@@ -28,7 +28,7 @@ class SimpleImputer(BaseTransformer):
             if c in self.cat_cols or df[c].dtype == "object":
                 self.impute_dict[c] = df[c].value_counts().index[0]
             else:
-                self.impute_dict[c] = df[c].mean()
+                self.impute_dict[c] = df[c].median()
         return self
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:

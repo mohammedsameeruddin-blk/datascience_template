@@ -1,7 +1,7 @@
 import pandas as pd
 from .transformers.imputer import SimpleImputer
 from .transformers.onehot import OneHot
-from ..config.hyper_config import config
+from ..config.{{ dataset_keyword }}_config import {{ dataset_keyword | upper }}_CONFIG as config
 
 
 class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | replace(' ', '') }}Features:
@@ -13,8 +13,8 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
         """
         Initialize DataFeatures with imputer and one-hot encoder.
         """
-        self.imputer = SimpleImputer(cat_cols=config["model_params"]["cat_cols"])
-        self.encoder = OneHot(cols=config["model_params"]["onehot_cols"])
+        self.imputer = SimpleImputer(cat_cols=config["cat_cols"])
+        self.encoder = OneHot(cols=config["onehot_cols"])
 
     def _engineer(self, df: pd.DataFrame) -> pd.DataFrame:
         """

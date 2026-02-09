@@ -1,0 +1,15 @@
+"""
+{{ dataset_keyword|capitalize }} dataset configuration.
+Defines column types for feature engineering and data preprocessing.
+"""
+
+{{ dataset_keyword|upper }}_CONFIG = {
+    "dataset_name": "{{ dataset_keyword }}",
+    
+    # Categorical columns - used for imputation, most frequent value is considered
+    # If imputation should be applied on numerical, by default it is done using mean/median
+    "cat_cols": [],
+    
+    # Columns to apply one-hot encoding
+    "onehot_cols": []
+}
