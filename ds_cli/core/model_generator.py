@@ -3,10 +3,12 @@ from jinja2 import Environment, FileSystemLoader
 
 
 class ModelFileGenerator:
-    def __init__(self, project_root: Path, project_name: str):
+    def __init__(self, project_root: Path):
+        """
+        project_root = src/<project_name>
+        """
         self.project_root = project_root
-        self.project_name = project_name
-        self.models_dir = project_root / "src" / project_name / "models"
+        self.models_dir = project_root / "models"
 
         templates_dir = (
             Path(__file__).resolve().parents[1]

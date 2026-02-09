@@ -12,11 +12,18 @@ def to_class_name(dataset_name: str) -> str:
 
 class DatasetFileGenerator:
     def __init__(self, project_root: Path):
+        """
+        project_root = src/<project_name>
+        """
         self.project_root = project_root
         self.preprocess_dir = project_root / "dataflow" / "preprocess"
         self.features_dir = project_root / "dataflow" / "features"
 
-        templates_dir = Path(__file__).resolve().parents[1] / "templates" / "dataset"
+        templates_dir = (
+            Path(__file__).resolve().parents[1]
+            / "templates"
+            / "dataset"
+        )
         self.env = Environment(loader=FileSystemLoader(templates_dir))
 
     def generate(self, dataset_name: str) -> list[Path]:

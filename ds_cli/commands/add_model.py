@@ -50,7 +50,7 @@ def add_model(project_path: str, model_name: str, model_type: str):
         )
         raise click.Abort()
 
-    generator = ModelFileGenerator(project_root, project_root.name)
+    generator = ModelFileGenerator(project_root)
 
     click.echo(
         f"{Fore.CYAN}Creating model '{model_name}' ({model_type})...{Style.RESET_ALL}"
