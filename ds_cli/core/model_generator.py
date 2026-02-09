@@ -24,7 +24,7 @@ class ModelFileGenerator:
             raise FileExistsError(f"Model '{model}' already exists")
 
         context = {
-            "project": self.project_name,
+            "project": self.project_root.name,
             "model": model,
             "model_type": model_type,
         }
