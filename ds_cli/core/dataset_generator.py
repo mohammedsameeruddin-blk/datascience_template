@@ -16,6 +16,7 @@ class DatasetFileGenerator:
         project_root = src/<project_name>
         """
         self.project_root = project_root
+        self.config_dir = project_root / "dataflow" / "config"
         self.preprocess_dir = project_root / "dataflow" / "preprocess"
         self.features_dir = project_root / "dataflow" / "features"
 
@@ -35,6 +36,15 @@ class DatasetFileGenerator:
         }
 
         created_files = []
+        
+        # config
+        created_files.append(
+            self._render(
+                "config.py.jinja",
+                self.config_dir / f"{dataset_name}_config.py",
+                context,
+            )
+        )
 
         # preprocess
         created_files.append(
