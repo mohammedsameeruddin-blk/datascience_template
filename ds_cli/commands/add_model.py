@@ -1,6 +1,7 @@
 """Command for adding a new model to a project"""
 
 from pathlib import Path
+import re
 import click
 from colorama import Fore, Style
 
@@ -19,6 +20,13 @@ from ds_cli.core.model_generator import ModelFileGenerator
 )
 def add_model(project_path: str, model_name: str, model_type: str):
     """Add a new model to a data science project"""
+
+    # Validate model name format
+    if not model_name or re.search(r'[^a-zA-Z0-9_-]', model_name):
+        click.echo(
+            f"{Fore.RED}Error: Model name must contain only letters, numbers, dashes and underscores.{Style.RESET_ALL}"
+        )
+        raise click.Abort()
 
     project_path = Path(project_path)
     discovery = ProjectDiscovery(project_path)

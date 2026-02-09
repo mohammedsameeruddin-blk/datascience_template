@@ -1,6 +1,7 @@
 """Command for adding a new dataset to a project"""
 
 from pathlib import Path
+import re
 import click
 from colorama import Fore, Style
 
@@ -13,6 +14,13 @@ from ds_cli.core.dataset_generator import DatasetFileGenerator
 @click.option("--dataset-name", "-d", required=True, help="Name of the new dataset")
 def add_dataset(project_path: str, dataset_name: str):
     """Add a new dataset to a data science project"""
+
+    # Validate dataset name format
+    if not dataset_name or re.search(r'[^a-zA-Z0-9_-]', dataset_name):
+        click.echo(
+            f"{Fore.RED}Error: Dataset name must contain only letters, numbers, dashes and underscores.{Style.RESET_ALL}"
+        )
+        raise click.Abort()
 
     project_path = Path(project_path)
     discovery = ProjectDiscovery(project_path)
