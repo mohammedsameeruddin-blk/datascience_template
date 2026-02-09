@@ -1,0 +1,138 @@
+import sklearn  # noqa: F401
+import xgboost  # noqa: F401
+import catboost  # noqa: F401
+from pydoc import locate
+from .evaluator import evaluate_model
+from ...config.hyper_config import config, METRIC_DIRECTION
+
+
+class ModelEvaluator:
+    """
+    Evaluate multiple trained models using cross-validation results
+    and select the best-performing model based on a configured metric.
+    """
+
+    def __init__(self, train_df, tuning_results):
+        """
+        Initialize the ModelEvaluator.
+
+        Args:
+            train_df (pd.DataFrame): Training dataset containing features
+                and target variable.
+            tuning_results (dict): Dictionary containing best hyperparameters
+                for each model obtained from the tuning stage.
+        """
+        self.config = config
+        self.train_df = train_df
+        self.tuning_results = tuning_results
+
+    def _select_best_model(self, results):
+        """
+        Select the best model based on the configured selection metric.
+
+        Args:
+            results (dict): Dictionary of evaluation results for each model,
+                where each entry contains mean cross-validation metrics.
+
+        Returns:
+            tuple: A tuple containing:
+                - best_model (str): Name of the best-performing model
+                - best_score (float): Best value of the selection metric
+        """
+        model_type = self.config["model_type"]
+
+        metric = self.config["model_params"]["selection_metric"]
+        direction = METRIC_DIRECTION[metric]
+
+        best_model = None
+        best_score = -float("inf") if direction == "max" else float("inf")
+
+        for model_name, res in results.items():
+            score = res["mean_metrics"][f"mean_{metric}"]
+
+            if direction == "max":
+                if score > best_score:
+                    best_score = score
+                    best_model = model_name
+            else:
+                if score < best_score:
+                    best_score = score
+                    best_model = model_name
+
+        return best_model, best_score
+    
+    def _resolve_model(self, model_spec):
+        """
+        Resolve model specification into a callable model class or object.
+
+        Args:
+            model_spec (str | object): Model class or import path.
+
+        Returns:
+            object: Resolved model class or instance.
+        """
+        if isinstance(model_spec, str):
+            cls_or_obj = locate(model_spec)
+            if cls_or_obj is None:
+                cls_or_obj = eval(model_spec)  # legacy fallback
+            return cls_or_obj
+        return model_spec
+
+    def run(self):
+        """
+        Run model evaluation for all configured models and select the best one.
+
+        This method evaluates each model using outer cross-validation,
+        aggregates performance metrics, and selects the best-performing
+        model based on the configured selection metric.
+
+        Returns:
+            dict: Evaluation summary containing:
+                - models (dict): Evaluation results for each model
+                - best_model (str): Name of the best-performing model
+                - selection_metric (str): Metric used for model selection
+                - selection_value (float): Best value of the selection metric
+        """
+        X = self.train_df.drop(
+            self.config["model_params"]["redu_col"], axis=1
+        )
+        y = self.train_df[self.config["model_params"]["target"]]
+
+        evaluation_results = {}
+
+        for model_key, model_cfg in self.config["models"].items():
+            model_name = model_cfg.get("name", model_key)
+            model_spec = model_cfg.get("model")
+            
+            assert model_spec is not None, (
+                f"Model specification missing for {model_name}"
+            )
+            
+            tuning_params = model_cfg["tuning_param"]
+            best_params = self.tuning_results[model_name]["best_params"]
+
+            model_cls = self._resolve_model(model_spec)
+
+            eval_result = evaluate_model(
+                model_cls=model_cls,
+                best_params=best_params,
+                X=X,
+                y=y,
+                tuning_params=tuning_params,
+            )
+
+            evaluation_results[model_name] = {
+                "model_type": eval_result["model_type"],
+                "best_params": best_params,
+                "folds": eval_result["folds"],
+                "mean_metrics": eval_result["mean_metrics"],
+            }
+
+        best_model, best_score = self._select_best_model(evaluation_results)
+
+        return {
+            "models": evaluation_results,
+            "best_model": best_model,
+            "selection_metric": self.config["model_params"]["selection_metric"],
+            "selection_value": best_score,
+        }

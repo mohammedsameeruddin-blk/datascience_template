@@ -1,0 +1,95 @@
+import numpy as np
+from typing import Tuple
+from sklearn.metrics import (
+    accuracy_score,
+    roc_auc_score,
+    recall_score,
+    precision_score,
+    mean_absolute_error,
+    r2_score,
+    mean_squared_error,
+    mean_absolute_percentage_error,
+)
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+from ..config.hyper_config import config
+
+
+def ml_metrics(actual, pred, config=config) -> Tuple:
+    """
+    Compute evaluation metrics for classification or regression models.
+
+    Metrics are selected based on `config["model_type"]`.
+
+    Args:
+        actual (array-like): Ground truth target values.
+        pred (array-like): Predicted values or probabilities.
+        config (dict, optional): Configuration dictionary containing
+            `model_type`. Defaults to global config.
+
+    Returns:
+        Tuple:
+            - Classification: (accuracy, precision, recall, roc_auc)
+            - Regression: (mae, r2, mse, mape)
+
+    Raises:
+        ValueError: If unsupported model type is provided.
+    """
+    model_type = config.get("model_type")
+
+    if model_type == "Classification":
+        accuracy = accuracy_score(actual, pred)
+        precision = precision_score(actual, pred)
+        recall = recall_score(actual, pred)
+        roc_auc = roc_auc_score(actual, pred)
+
+        return accuracy, precision, recall, roc_auc
+
+    if model_type == "regression":
+        mae = mean_absolute_error(actual, pred)
+        r2 = r2_score(actual, pred)
+        mse = mean_squared_error(actual, pred)
+        mape = mean_absolute_percentage_error(actual, pred)
+
+        return mae, r2, mse, mape
+
+    raise ValueError(f"Unsupported model_type: {model_type}")
+
+
+def feature_scaling(df_train, df_test, config=config):
+    """
+    Apply feature scaling to numeric columns in train and test datasets.
+
+    The scaler type is selected based on `config["model_params"]["scaler"]`.
+
+    Args:
+        df_train (pd.DataFrame): Training feature dataframe.
+        df_test (pd.DataFrame): Validation or test feature dataframe.
+        config (dict, optional): Configuration dictionary containing
+            scaler type and numeric columns. Defaults to global config.
+
+    Returns:
+        Tuple:
+            - pd.DataFrame: Scaled training dataframe
+            - pd.DataFrame: Scaled test dataframe
+            - object: Fitted scaler instance
+    """
+    scaler_type = config["model_params"].get("scaler", "standard")
+
+    if scaler_type == "standard":
+        scaler = StandardScaler()
+    elif scaler_type == "min_max":
+        scaler = MinMaxScaler()
+    else:
+        scaler = StandardScaler()
+
+    selected_columns = config["model_params"]["num_cols"]
+
+    df_train[selected_columns] = scaler.fit_transform(
+        df_train[selected_columns]
+    )
+    df_test[selected_columns] = scaler.transform(
+        df_test[selected_columns]
+    )
+
+    return df_train, df_test, scaler

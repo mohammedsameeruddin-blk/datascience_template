@@ -1,0 +1,130 @@
+from functools import partial
+
+import numpy as np
+import pandas as pd
+
+import sklearn  # noqa: F401
+import xgboost  # noqa: F401
+import catboost  # noqa: F401
+
+from pydoc import locate
+from hyperopt import Trials, fmin, space_eval, tpe
+
+from ...config.hyper_config import config as hyper_config
+from .objective import hyperopt_objective
+
+
+class HyperparameterTuner:
+    """
+    Generic hyperparameter tuner supporting classification and regression.
+
+    Expects `config["models"]` entries to include:
+        - name (str): Human-readable model name
+        - model (str | object): Model class or import path
+        - hyperparameters (dict): Hyperopt search space
+        - tuning_param / tuning_params (dict): Tuning configuration
+            (e.g., max_iter, k_inner, seed)
+    """
+
+    def __init__(self, train_df: pd.DataFrame, config: dict = None):
+        """
+        Initialize the HyperparameterTuner.
+
+        Args:
+            train_df (pd.DataFrame): Training dataset.
+            config (dict, optional): Configuration dictionary.
+                Defaults to hyper_config.
+
+        Raises:
+            AssertionError: If configuration is None.
+        """
+        self.config = config or hyper_config
+        assert self.config is not None, "Configuration cannot be None"
+        self.train_df = train_df
+
+    def _resolve_model(self, model_spec):
+        """
+        Resolve model specification into a callable model class or object.
+
+        Args:
+            model_spec (str | object): Model class or import path.
+
+        Returns:
+            object: Resolved model class or instance.
+        """
+        if isinstance(model_spec, str):
+            cls_or_obj = locate(model_spec)
+            if cls_or_obj is None:
+                cls_or_obj = eval(model_spec)  # legacy fallback
+            return cls_or_obj
+        return model_spec
+
+    def run(self) -> dict:
+        """
+        Execute hyperparameter tuning for all configured models.
+
+        Returns:
+            dict: Dictionary keyed by model name containing:
+                - best_params (dict)
+                - best_loss (float)
+                - trials (list)
+        """
+        results = {}
+
+        X = self.train_df.drop(
+            self.config["model_params"]["redu_col"], axis=1
+        )
+        y = self.train_df[self.config["model_params"]["target"]]
+
+        for model_key, model_cfg in self.config["models"].items():
+            model_name = model_cfg.get("name", model_key)
+            model_spec = model_cfg.get("model")
+
+            assert model_spec is not None, (
+                f"Model specification missing for {model_name}"
+            )
+
+            model_cls = self._resolve_model(model_spec)
+
+            search_space = model_cfg.get("hyperparameters", {})
+            tuning_params = (
+                model_cfg.get("tuning_params")
+                or model_cfg.get("tuning_param")
+                or {}
+            )
+
+            trials = Trials()
+
+            objective_fn = partial(
+                hyperopt_objective,
+                model_cls=model_cls,
+                X=X,
+                y=y,
+                tuning_params=tuning_params,
+            )
+
+            best = fmin(
+                fn=objective_fn,
+                space=search_space,
+                algo=tpe.suggest,
+                max_evals=tuning_params.get("max_iter", 50),
+                trials=trials,
+                rstate=np.random.default_rng(
+                    self.config["model_params"].get("seed", 42)
+                ),
+            )
+
+            best_params = space_eval(search_space, best)
+            losses = [
+                r.get("loss")
+                for r in trials.results
+                if r and r.get("loss") is not None
+            ]
+
+            results[model_name] = {
+                "best_params": best_params,
+                "best_loss": min(losses) if losses else None,
+                "trials": trials.results,
+            }
+
+        return results

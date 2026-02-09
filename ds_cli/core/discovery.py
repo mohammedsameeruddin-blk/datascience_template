@@ -48,3 +48,26 @@ class ProjectDiscovery:
                 datasets.add(f.stem.replace("_features", ""))
 
         return sorted(datasets)
+    
+    # Model discovery
+    def get_models(self) -> List[str]:
+        project_root = self.get_project_root()
+        if project_root is None:
+            return []
+
+        models_dir = project_root / "models"
+        if not models_dir.exists():
+            return []
+
+        models = []
+
+        for d in models_dir.iterdir():
+            if not d.is_dir():
+                continue
+
+            # minimal validity check
+            if (d / "training").exists() and (d / "inference").exists():
+                models.append(d.name)
+
+        return sorted(models)
+

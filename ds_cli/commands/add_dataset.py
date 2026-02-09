@@ -5,12 +5,12 @@ import click
 from colorama import Fore, Style
 
 from ds_cli.core.discovery import ProjectDiscovery
-from ds_cli.core.generator import DatasetFileGenerator
+from ds_cli.core.dataset_generator import DatasetFileGenerator
 
 
 @click.command(name="add-dataset")
 @click.argument("project_path", type=click.Path(exists=True))
-@click.option("--dataset-name", "-d", help="Name of the new dataset")
+@click.option("--dataset-name", "-d", required=True, help="Name of the new dataset")
 def add_dataset(project_path: str, dataset_name: str):
     """Add a new dataset to a data science project"""
 
@@ -38,10 +38,6 @@ def add_dataset(project_path: str, dataset_name: str):
         f"{Style.RESET_ALL}\n"
     )
 
-    # Dataset name
-    if not dataset_name:
-        dataset_name = click.prompt("Enter new dataset name")
-
     if dataset_name in existing_datasets:
         click.echo(
             f"{Fore.RED}Error: Dataset '{dataset_name}' already exists{Style.RESET_ALL}"
@@ -64,5 +60,4 @@ def add_dataset(project_path: str, dataset_name: str):
 
     click.echo(f"\n{Fore.YELLOW}Next steps:{Style.RESET_ALL}")
     click.echo("  1. Review the generated files")
-    click.echo("  2. Register the dataset in configs if required")
-    click.echo("  3. Use the dataset in model training/inference")
+    click.echo("  2. Use the dataset in model training/inference")
