@@ -14,7 +14,7 @@ class SimpleImputer(BaseTransformer):
         self.cat_cols = cat_cols or []
         self.impute_dict = {} 
 
-    def fit(self, df: pd.DataFrame)-> SimpleImputer:
+    def fit(self, df: pd.DataFrame)-> "SimpleImputer":
         """
         Fit the imputer to the data by calculating mean for numerical columns
         and mode for categorical columns.
