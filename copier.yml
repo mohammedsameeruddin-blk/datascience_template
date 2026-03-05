@@ -17,10 +17,10 @@ _message_before_copy: |
 
   Please, reply to the question carefully as the answers will be used to configure the scaffold of your project.
 
-# Project info
+# DS project info
 project:
   type: str
-  help: "Your project name (without prefixes like ds_, ds-, etc)"
+  help: "Your DS project name (without prefixes like ds_, ds-, etc)"
   validator: >-
     {% if not project or project | regex_search('[^a-zA-Z0-9_-]') %}
     project must contain letters, numbers, dashes and underscores.
