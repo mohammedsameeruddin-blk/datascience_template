@@ -12,6 +12,7 @@ class {{ dataset_class }}Preprocess(BasePreprocessor):
 
     dataset_name = "{{ dataset_name }}"
 
+    
     def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
         """Add attributes for the Data Preprocess like configurations and dataframe/data.
 
@@ -31,6 +32,7 @@ class {{ dataset_class }}Preprocess(BasePreprocessor):
         
         super().__init__(config=self.config, data=kwargs.get("data"))
 
+    
     def load(self) -> pd.DataFrame:
         """Load raw data (file, table, API, etc.).
         Returns:
@@ -53,6 +55,7 @@ class {{ dataset_class }}Preprocess(BasePreprocessor):
             df, pd.DataFrame
         ), f"function expects a dataframe but got {type(df)}"
 
+    
     def transform(self, data: pd.DataFrame) -> pd.DataFrame:
         """Transform raw input into model-ready dataframe.
         Args:

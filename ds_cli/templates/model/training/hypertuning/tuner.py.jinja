@@ -42,6 +42,7 @@ class HyperparameterTuner:
         assert self.config is not None, "Configuration cannot be None"
         self.train_df = train_df
 
+    
     def _resolve_model(self, model_spec):
         """
         Resolve model specification into a callable model class or object.
@@ -59,6 +60,7 @@ class HyperparameterTuner:
             return cls_or_obj
         return model_spec
 
+    
     def run(self) -> dict:
         """
         Execute hyperparameter tuning for all configured models.

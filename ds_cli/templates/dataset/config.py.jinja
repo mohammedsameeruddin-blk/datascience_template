@@ -1,9 +1,9 @@
 """
-{{ dataset_name|capitalize }} dataset configuration.
+{{ dataset_name | capitalize }} dataset configuration.
 Defines column types for feature engineering and data preprocessing.
 """
 
-{{ dataset_name|upper }}_CONFIG = {
+{{ dataset_name | upper }}_CONFIG = {
     "dataset_name": "{{ dataset_name }}",
     
     # Categorical columns - used for imputation, most frequent value is considered
