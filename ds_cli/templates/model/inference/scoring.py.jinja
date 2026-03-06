@@ -36,6 +36,7 @@ class BatchScoring(BaseScorer):
             config=hyper_config if config is None else config,
         )
 
+    
     def load(self) -> pd.DataFrame:
         """
         Load input data for batch scoring.
@@ -48,6 +49,7 @@ class BatchScoring(BaseScorer):
         """
         return self.input_df.copy()
 
+    
     def prepare_features(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Prepare features for model inference.
