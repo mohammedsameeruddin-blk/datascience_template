@@ -41,6 +41,7 @@ class ModelTrainer:
         self.best_params = best_params
         self.config = config
 
+    
     def _resolve_model(self, model_spec):
         """
         Resolve model specification to a class or object.
@@ -61,6 +62,7 @@ class ModelTrainer:
             return cls_or_obj
         return model_spec
 
+    
     def run(self) -> Dict[str, Any]:
         """
         Train the selected model and evaluate performance.

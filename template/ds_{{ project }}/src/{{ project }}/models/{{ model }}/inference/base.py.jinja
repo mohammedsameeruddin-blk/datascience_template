@@ -32,16 +32,19 @@ class BaseScorer(ABC):
         self.config = config or {}
         self.runtime_args = kwargs
 
+    
     @abstractmethod
     def load(self) -> Any:
         """Load input data for scoring."""
         raise NotImplementedError
 
+    
     @abstractmethod
     def prepare_features(self, data: Any) -> pd.DataFrame:
         """Convert input data into model-ready dataframe."""
         raise NotImplementedError
 
+    
     def apply_scaling(self, df: pd.DataFrame) -> pd.DataFrame:
         """Apply scaler if present."""
         if self.scaler:
@@ -50,6 +53,7 @@ class BaseScorer(ABC):
                 df[num_cols] = self.scaler.transform(df[num_cols])
         return df
 
+    
     def score(self, df: pd.DataFrame):
         """
         Default scoring logic.
@@ -58,6 +62,7 @@ class BaseScorer(ABC):
         """
         return self.model.predict(df)
 
+    
     def post_score_hook(
         self, df: pd.DataFrame, predictions
     ) -> pd.DataFrame:
@@ -70,6 +75,7 @@ class BaseScorer(ABC):
         
         return result
 
+    
     def run(self) -> pd.DataFrame:
         """Template method — DO NOT override."""
         raw = self.load()
@@ -90,6 +96,7 @@ class BaseScorer(ABC):
         self._validate_output(result_df)
         return result_df
 
+    
     def _validate_output(self, df: pd.DataFrame) -> None:
         if df.empty:
             raise ValueError("Scoring output is empty")
