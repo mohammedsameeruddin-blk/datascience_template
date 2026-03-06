@@ -16,10 +16,12 @@ class BaseTransformer(ABC):
         """
         raise NotImplementedError
 
+    
     @abstractmethod
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         raise NotImplementedError
 
+    
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         self.fit(df)
         return self.transform(df)

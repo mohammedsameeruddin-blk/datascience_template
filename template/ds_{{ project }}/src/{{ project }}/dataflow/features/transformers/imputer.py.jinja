@@ -10,10 +10,12 @@ class SimpleImputer(BaseTransformer):
     Args:
         cat_cols (list): List of categorical columns.
     """
+    
     def __init__(self, cat_cols: list):
         self.cat_cols = cat_cols or []
         self.impute_dict = {} 
 
+    
     def fit(self, df: pd.DataFrame)-> "SimpleImputer":
         """
         Fit the imputer to the data by calculating mean for numerical columns
@@ -31,6 +33,7 @@ class SimpleImputer(BaseTransformer):
                 self.impute_dict[c] = df[c].median()
         return self
 
+    
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Transform the data by filling missing values using the fitted impute_dict.

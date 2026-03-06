@@ -11,6 +11,7 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
 
     dataset_name = "{{ dataset_keyword }}"
 
+    
     def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
         """Add attributes for the Data Preprocess like configurations and dataframe/data.
 
@@ -30,6 +31,7 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
         
         super().__init__(config=self.config, data=kwargs.get("data"))
 
+    
     def load(self) -> pd.DataFrame:
         """Load raw data (file, table, API, etc.).
         Returns:
@@ -52,6 +54,7 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
             df, pd.DataFrame
         ), f"function expects a dataframe but got {type(df)}"
 
+    
     def transform(self, data: pd.DataFrame) -> pd.DataFrame:
         """Transform raw input into model-ready dataframe.
         Args:

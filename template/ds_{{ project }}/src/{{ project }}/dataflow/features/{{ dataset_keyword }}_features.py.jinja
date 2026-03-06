@@ -9,6 +9,7 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
 
     dataset_name = "{{ dataset_keyword }}"
     
+    
     def __init__(self):
         """
         Initialize DataFeatures with imputer and one-hot encoder.
@@ -16,6 +17,7 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
         self.imputer = SimpleImputer(cat_cols=config["cat_cols"])
         self.encoder = OneHot(cols=config["onehot_cols"])
 
+    
     def _engineer(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Feature engineering logic.
@@ -26,12 +28,14 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
         """
         return df
 
+    
     def fit(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self.imputer.fit_transform(df)
         df = self._engineer(df)
         df = self.encoder.fit_transform(df)
         return df
 
+    
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self.imputer.transform(df)
         df = self._engineer(df)
