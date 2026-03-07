@@ -16,7 +16,7 @@ pip install -e .
 ds-cli add-dataset /path/to/project --dataset-name my_dataset
 ```
 
-### Add a New Dataset to a Project
+### Add a New Model to a Project
 
 ```bash
 ds-cli add-model /path/to/project --model-name my_model --model-type Regression/Classification
