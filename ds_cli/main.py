@@ -3,6 +3,8 @@
 import click
 from ds_cli.commands.add_dataset import add_dataset
 from ds_cli.commands.add_model import add_model
+from ds_cli.commands.remove_dataset import remove_dataset
+from ds_cli.commands.remove_model import remove_model
 
 
 @click.group()
@@ -13,6 +15,8 @@ def cli():
 
 cli.add_command(add_dataset)
 cli.add_command(add_model)
+cli.add_command(remove_dataset)
+cli.add_command(remove_model)
 
 
 if __name__ == "__main__":
