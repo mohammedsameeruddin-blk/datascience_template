@@ -40,8 +40,6 @@ class ModelEvaluator:
                 - best_model (str): Name of the best-performing model
                 - best_score (float): Best value of the selection metric
         """
-        model_type = self.config["model_type"]
-
         metric = self.config["model_params"]["selection_metric"]
         direction = METRIC_DIRECTION[metric]
 

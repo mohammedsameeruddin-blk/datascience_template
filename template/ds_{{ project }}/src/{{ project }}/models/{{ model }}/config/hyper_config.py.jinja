@@ -1,5 +1,4 @@
 from hyperopt import hp
-import sklearn, xgboost, catboost
 
 
 METRIC_DIRECTION = {
@@ -40,11 +39,7 @@ config = {
         "test_ratio": 0.3,
         "time_data": {"time_split": False},
 
-        {% if model_type == "Classification" %}
-        "selection_metric": "roc_auc", # change the metric as per the requirement from the above lookup
-        {% else %}
-        "selection_metric": "rmse", # change the metric as per the requirement from the above lookup
-        {% endif %}
+        "selection_metric": "{{ 'roc_auc' if model_type == 'Classification' else 'rmse' }}", # change the metric as per the requirement from the above lookup
 
         "scaler": "standard"
     },
@@ -54,11 +49,7 @@ config = {
         "model1": {
             "name": "RandomForest",
 
-            {% if model_type == "Classification" %}
-            "model": "sklearn.ensemble.RandomForestClassifier()",
-            {% else %}
-            "model": "sklearn.ensemble.RandomForestRegressor()",
-            {% endif %}
+            "model": "{{ 'sklearn.ensemble.RandomForestClassifier()' if model_type == 'Classification' else 'sklearn.ensemble.RandomForestRegressor()' }}",
 
             "tuning_param": {
                 "max_iter": 10,
@@ -80,11 +71,7 @@ config = {
         "model2": {
             "name": "XGBoost",
 
-            {% if model_type == "Classification" %}
-            "model": "xgboost.XGBClassifier()",
-            {% else %}
-            "model": "xgboost.XGBRegressor()",
-            {% endif %}
+            "model": "{{ 'xgboost.XGBClassifier()' if model_type == 'Classification' else 'xgboost.XGBRegressor()' }}",
 
             "tuning_param": {
                 "max_iter": 10,
@@ -105,11 +92,7 @@ config = {
         "model3": {
             "name": "CatBoost",
 
-            {% if model_type == "Classification" %}
-            "model": "catboost.CatBoostClassifier()",
-            {% else %}
-            "model": "catboost.CatBoostRegressor()",
-            {% endif %}
+            "model": "{{ 'catboost.CatBoostClassifier()' if model_type == 'Classification' else 'catboost.CatBoostRegressor()' }}",
 
             "tuning_param": {
                 "max_iter": 10,
