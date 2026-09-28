@@ -16,48 +16,31 @@ METRIC_DIRECTION = {
 
 config = {
     "model_type": "{{ model_type }}",  # classification | regression
-
-    "id_col": "", # add the unique identifier column name if any
-
+    "id_col": "",  # add the unique identifier column name if any
     "model_params": {
         # Target variable name
         "target": [],
-        
         # Numerical columns combined from all datasets used in this model
         # Used for feature scaling during hyperparameter tuning and training
         # Example: ["Age", "SibSp", "Parch", "Fare"]
         "num_cols": [],
-        
         # Columns to drop after feature engineering combined from all datasets
         # These are not used for model training
         # Example: ["PassengerId", "Name", "Ticket", "Cabin"]
         "redu_col": [],
-        
         "acceptance_criteria": 0.80,
         "cluster_size": 4,
         "seed": 42,
         "test_ratio": 0.3,
         "time_data": {"time_split": False},
-
-        "selection_metric": "{{ 'roc_auc' if model_type == 'Classification' else 'rmse' }}", # change the metric as per the requirement from the above lookup
-
-        "scaler": "standard"
+        "selection_metric": "{{ 'roc_auc' if model_type == 'Classification' else 'rmse' }}",  # change the metric as per the requirement from the above lookup
+        "scaler": "standard",
     },
-
     "models": {
-
         "model1": {
             "name": "RandomForest",
-
             "model": "{{ 'sklearn.ensemble.RandomForestClassifier()' if model_type == 'Classification' else 'sklearn.ensemble.RandomForestRegressor()' }}",
-
-            "tuning_param": {
-                "max_iter": 10,
-                "k_inner": 3,
-                "k_outer": 5,
-                "seed": 123
-            },
-
+            "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
                 "max_features": hp.choice("max_features", ["log2", "sqrt"]),
                 "max_depth": hp.choice("max_depth", [10, 25, 50, 100]),
@@ -67,19 +50,10 @@ config = {
                 "random_state": hp.choice("random_state", [42]),
             },
         },
-
         "model2": {
             "name": "XGBoost",
-
             "model": "{{ 'xgboost.XGBClassifier()' if model_type == 'Classification' else 'xgboost.XGBRegressor()' }}",
-
-            "tuning_param": {
-                "max_iter": 10,
-                "k_inner": 3,
-                "k_outer": 5,
-                "seed": 123
-            },
-
+            "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
                 "max_depth": hp.choice("max_depth", [3, 5, 6, 10, 15, 20]),
                 "learning_rate": hp.choice("learning_rate", [0.01, 0.1, 0.2, 0.3]),
@@ -88,19 +62,10 @@ config = {
                 "random_state": hp.choice("random_state", [42]),
             },
         },
-
         "model3": {
             "name": "CatBoost",
-
             "model": "{{ 'catboost.CatBoostClassifier()' if model_type == 'Classification' else 'catboost.CatBoostRegressor()' }}",
-
-            "tuning_param": {
-                "max_iter": 10,
-                "k_inner": 3,
-                "k_outer": 5,
-                "seed": 123
-            },
-
+            "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
                 "depth": hp.choice("depth", [6, 8, 10]),
                 "learning_rate": hp.choice("learning_rate", [0.01, 0.05, 0.1]),

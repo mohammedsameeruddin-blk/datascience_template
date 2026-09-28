@@ -6,17 +6,16 @@ from .base import BaseTransformer
 class SimpleImputer(BaseTransformer):
     """
     Simple Imputer to fill missing values in the dataframe.
-    
+
     Args:
         cat_cols (list): List of categorical columns.
     """
-    
+
     def __init__(self, cat_cols: list):
         self.cat_cols = cat_cols or []
-        self.impute_dict = {} 
+        self.impute_dict = {}
 
-    
-    def fit(self, df: pd.DataFrame)-> "SimpleImputer":
+    def fit(self, df: pd.DataFrame) -> "SimpleImputer":
         """
         Fit the imputer to the data by calculating mean for numerical columns
         and mode for categorical columns.
@@ -25,7 +24,7 @@ class SimpleImputer(BaseTransformer):
         Returns:
             self: Fitted imputer instance.
         """
-        
+
         for c in df.columns:
             if c in self.cat_cols or df[c].dtype == "object":
                 self.impute_dict[c] = df[c].value_counts().index[0]
@@ -33,7 +32,6 @@ class SimpleImputer(BaseTransformer):
                 self.impute_dict[c] = df[c].median()
         return self
 
-    
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Transform the data by filling missing values using the fitted impute_dict.

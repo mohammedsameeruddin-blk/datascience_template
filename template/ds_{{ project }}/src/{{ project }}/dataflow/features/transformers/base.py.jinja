@@ -11,17 +11,15 @@ class BaseTransformer(ABC):
         """Fit the transformer to the data.
         Args:
             df (pd.DataFrame): Input dataframe to fit the transformer.
-            
+
         NOTE:Must return self
         """
         raise NotImplementedError
 
-    
     @abstractmethod
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         raise NotImplementedError
 
-    
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         self.fit(df)
         return self.transform(df)

@@ -88,9 +88,7 @@ def hyperopt_objective(
             metrics_store["mape"].append(mape)
 
     # Aggregation
-    mean_metrics = {
-        k: float(np.mean(v)) for k, v in metrics_store.items() if v
-    }
+    mean_metrics = {k: float(np.mean(v)) for k, v in metrics_store.items() if v}
 
     selected_value = mean_metrics[selection_metric]
 

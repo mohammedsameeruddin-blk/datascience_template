@@ -20,31 +20,23 @@ class BaseScorer(ABC):
     version: str = "v1"
 
     def __init__(
-        self,
-        *,
-        model,
-        scaler=None,
-        config: Optional[Dict[str, Any]] = None,
-        **kwargs
+        self, *, model, scaler=None, config: Optional[Dict[str, Any]] = None, **kwargs
     ):
         self.model = model
         self.scaler = scaler
         self.config = config or {}
         self.runtime_args = kwargs
 
-    
     @abstractmethod
     def load(self) -> Any:
         """Load input data for scoring."""
         raise NotImplementedError
 
-    
     @abstractmethod
     def prepare_features(self, data: Any) -> pd.DataFrame:
         """Convert input data into model-ready dataframe."""
         raise NotImplementedError
 
-    
     def apply_scaling(self, df: pd.DataFrame) -> pd.DataFrame:
         """Apply scaler if present."""
         if self.scaler:
@@ -53,7 +45,6 @@ class BaseScorer(ABC):
                 df[num_cols] = self.scaler.transform(df[num_cols])
         return df
 
-    
     def score(self, df: pd.DataFrame):
         """
         Default scoring logic.
@@ -62,31 +53,27 @@ class BaseScorer(ABC):
         """
         return self.model.predict(df)
 
-    
-    def post_score_hook(
-        self, df: pd.DataFrame, predictions
-    ) -> pd.DataFrame:
+    def post_score_hook(self, df: pd.DataFrame, predictions) -> pd.DataFrame:
         """Attach predictions or enrich output."""
         result = pd.DataFrame({"prediction": predictions})
-        
+
         # If ID column was stored, add it to the result
         if hasattr(self, "_id_value") and hasattr(self, "_id_col"):
             result.insert(0, self._id_col, self._id_value.values)
-        
+
         return result
 
-    
     def run(self) -> pd.DataFrame:
         """Template method — DO NOT override."""
         raw = self.load()
-        
+
         # Store ID column from raw data before prepare_features
         id_col = self.config.get("id_col", None)
         if id_col and id_col in raw.columns:
             # store as strings to preserve ID semantics across transforms
             self._id_value = raw[id_col].astype(str).copy()
             self._id_col = id_col
-        
+
         features = self.prepare_features(raw)
         features = self.apply_scaling(features)
 
@@ -96,7 +83,6 @@ class BaseScorer(ABC):
         self._validate_output(result_df)
         return result_df
 
-    
     def _validate_output(self, df: pd.DataFrame) -> None:
         if df.empty:
             raise ValueError("Scoring output is empty")

@@ -84,11 +84,7 @@ def feature_scaling(df_train, df_test, config=config):
 
     selected_columns = config["model_params"]["num_cols"]
 
-    df_train[selected_columns] = scaler.fit_transform(
-        df_train[selected_columns]
-    )
-    df_test[selected_columns] = scaler.transform(
-        df_test[selected_columns]
-    )
+    df_train[selected_columns] = scaler.fit_transform(df_train[selected_columns])
+    df_test[selected_columns] = scaler.transform(df_test[selected_columns])
 
     return df_train, df_test, scaler

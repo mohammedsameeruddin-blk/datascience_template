@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional
 import pandas as pd
 
 
-
 class BasePreprocessor(ABC):
     """
     Base class for all data pre-processors.
@@ -16,11 +15,12 @@ class BasePreprocessor(ABC):
     DO NOT override:
     - run()
     """
+
     dataset_name: str = "unknown"
     version: str = "v1"
 
     def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
-        """"
+        """
         Initialize the BasePreprocessor with configuration and runtime arguments.
         Args:
             config (Optional[Dict[str, Any]]): Configuration dictionary. Defaults to None.
@@ -65,7 +65,7 @@ class BasePreprocessor(ABC):
     def describe(self) -> Dict[str, Any]:
         """Describe the data and columns"""
         return {}
-    
+
     def run(self) -> pd.DataFrame:
         """Template method — do not override."""
         raw = self.load()
@@ -80,7 +80,7 @@ class BasePreprocessor(ABC):
 
         self._validate_output(df)
         return df
-    
+
     def _validate_output(self, df: pd.DataFrame) -> None:
         if df.empty:
             raise ValueError("Pre-processed DataFrame is empty")
