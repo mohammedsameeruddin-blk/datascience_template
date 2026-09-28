@@ -4,6 +4,7 @@ import click
 from ds_cli.commands.add_dataset import add_dataset
 from ds_cli.commands.add_model import add_model
 
+
 @click.group()
 def cli():
     """Data Science CLI Tool for managing DS projects."""

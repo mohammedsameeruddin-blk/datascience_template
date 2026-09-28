@@ -10,11 +10,7 @@ class ModelFileGenerator:
         self.project_root = project_root
         self.models_dir = project_root / "models"
 
-        templates_dir = (
-            Path(__file__).resolve().parents[1]
-            / "templates"
-            / "model"
-        )
+        templates_dir = Path(__file__).resolve().parents[1] / "templates" / "model"
         self.env = Environment(loader=FileSystemLoader(templates_dir))
 
     def generate(self, model: str, model_type: str) -> list[Path]:
@@ -36,9 +32,7 @@ class ModelFileGenerator:
                 continue
 
             output_path = target_dir / template_name.replace(".jinja", "")
-            created_files.append(
-                self._render(template_name, output_path, context)
-            )
+            created_files.append(self._render(template_name, output_path, context))
 
         return created_files
 

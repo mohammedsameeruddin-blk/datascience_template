@@ -22,7 +22,7 @@ def add_model(project_path: str, model_name: str, model_type: str):
     """Add a new model to a data science project"""
 
     # Validate model name format
-    if not model_name or re.search(r'[^a-zA-Z0-9_-]', model_name):
+    if not model_name or re.search(r"[^a-zA-Z0-9_-]", model_name):
         click.echo(
             f"{Fore.RED}Error: Model name must contain only letters, numbers, dashes and underscores.{Style.RESET_ALL}"
         )
@@ -51,7 +51,7 @@ def add_model(project_path: str, model_name: str, model_type: str):
         f"{', '.join(existing_models) if existing_models else 'None'}"
         f"{Style.RESET_ALL}\n"
     )
-    
+
     if model_name in existing_models:
         click.echo(
             f"{Fore.RED}Error: Model '{model_name}' already exists{Style.RESET_ALL}"

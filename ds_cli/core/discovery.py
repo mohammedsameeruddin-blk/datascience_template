@@ -16,11 +16,7 @@ class ProjectDiscovery:
             return None
 
         for d in self.src_path.iterdir():
-            if (
-                d.is_dir()
-                and (d / "dataflow").exists()
-                and (d / "models").exists()
-            ):
+            if d.is_dir() and (d / "dataflow").exists() and (d / "models").exists():
                 return d
 
         return None
@@ -53,7 +49,7 @@ class ProjectDiscovery:
                 datasets.add(f.stem.replace("_features", ""))
 
         return sorted(datasets)
-    
+
     # Model discovery
     def get_models(self) -> List[str]:
         project_root = self.get_project_root()
@@ -75,4 +71,3 @@ class ProjectDiscovery:
                 models.append(d.name)
 
         return sorted(models)
-

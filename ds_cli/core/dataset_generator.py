@@ -7,7 +7,9 @@ def to_class_name(dataset_name: str) -> str:
     titanic_v2 → TitanicV2
     customer-churn → CustomerChurn
     """
-    return "".join(word.capitalize() for word in dataset_name.replace("-", "_").split("_"))
+    return "".join(
+        word.capitalize() for word in dataset_name.replace("-", "_").split("_")
+    )
 
 
 class DatasetFileGenerator:
@@ -20,11 +22,7 @@ class DatasetFileGenerator:
         self.preprocess_dir = project_root / "dataflow" / "preprocess"
         self.features_dir = project_root / "dataflow" / "features"
 
-        templates_dir = (
-            Path(__file__).resolve().parents[1]
-            / "templates"
-            / "dataset"
-        )
+        templates_dir = Path(__file__).resolve().parents[1] / "templates" / "dataset"
         self.env = Environment(loader=FileSystemLoader(templates_dir))
 
     def generate(self, dataset_name: str) -> list[Path]:
@@ -36,7 +34,7 @@ class DatasetFileGenerator:
         }
 
         created_files = []
-        
+
         # config
         created_files.append(
             self._render(
