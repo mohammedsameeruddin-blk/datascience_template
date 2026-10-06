@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any
+
 import pandas as pd
 
 
@@ -19,11 +20,11 @@ class BasePreprocessor(ABC):
     dataset_name: str = "unknown"
     version: str = "v1"
 
-    def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
+    def __init__(self, *, config: dict[str, Any] | None = None, **kwargs):
         """
         Initialize the BasePreprocessor with configuration and runtime arguments.
         Args:
-            config (Optional[Dict[str, Any]]): Configuration dictionary. Defaults to None.
+            config (dict[str, Any] | None): Configuration dictionary. Defaults to None.
             **kwargs: Arbitrary keyword arguments for runtime parameters.
         """
         self.config = config or {}
@@ -62,7 +63,7 @@ class BasePreprocessor(ABC):
     def post_transform_hook(self, df: pd.DataFrame) -> pd.DataFrame:
         return df
 
-    def describe(self) -> Dict[str, Any]:
+    def describe(self) -> dict[str, Any]:
         """Describe the data and columns"""
         return {}
 

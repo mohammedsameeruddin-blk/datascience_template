@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any
+
 import pandas as pd
 
 
@@ -20,7 +21,7 @@ class BaseScorer(ABC):
     version: str = "v1"
 
     def __init__(
-        self, *, model, scaler=None, config: Optional[Dict[str, Any]] = None, **kwargs
+        self, *, model, scaler=None, config: dict[str, Any] | None = None, **kwargs
     ):
         self.model = model
         self.scaler = scaler

@@ -1,9 +1,11 @@
+from pydoc import locate
+
+import catboost  # noqa: F401
 import sklearn  # noqa: F401
 import xgboost  # noqa: F401
-import catboost  # noqa: F401
-from pydoc import locate
+
+from ...config.hyper_config import METRIC_DIRECTION, config
 from .evaluator import evaluate_model
-from ...config.hyper_config import config, METRIC_DIRECTION
 
 
 class ModelEvaluator:

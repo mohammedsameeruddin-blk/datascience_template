@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Optional
+
 from ..config.hyper_config import config as hyper_config
 from .base import BaseScorer
 
@@ -17,7 +17,7 @@ class BatchScoring(BaseScorer):
         input_df: pd.DataFrame,
         model,
         scaler=None,
-        config: Optional[dict] = None,
+        config: dict | None = None,
     ):
         """
         Initialize the batch scoring pipeline.

@@ -1,9 +1,10 @@
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
 from sklearn.model_selection import KFold
-from ..model_utils import ml_metrics
-from ..model_utils import feature_scaling
-from ...config.hyper_config import config, METRIC_DIRECTION
+
+from ...config.hyper_config import METRIC_DIRECTION, config
+from ..model_utils import feature_scaling, ml_metrics
 
 
 def hyperopt_objective(

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -11,12 +11,11 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
 
     dataset_name = "{{ dataset_keyword }}"
 
-    def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
+    def __init__(self, *, config: dict[str, Any] | None = None, **kwargs):
         """Add attributes for the Data Preprocess like configurations and dataframe/data.
 
         Args:
-            config (Optional[Dict[str, Any]], optional):Hyper configurations or configs for data preprocessing.
-                                                        Defaults to None.
+            config (dict[str, Any] | None, optional):Hyper configurations or configs for data preprocessing. Defaults to None.
 
             **kwargs: Arbitrary keyword arguments.
 

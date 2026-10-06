@@ -1,20 +1,19 @@
-from typing import Tuple
 from sklearn.metrics import (
     accuracy_score,
-    roc_auc_score,
-    recall_score,
-    precision_score,
     mean_absolute_error,
-    r2_score,
-    mean_squared_error,
     mean_absolute_percentage_error,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+    roc_auc_score,
 )
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 from ..config.hyper_config import config
 
 
-def ml_metrics(actual, pred, config=config) -> Tuple:
+def ml_metrics(actual, pred, config=config) -> tuple:
     """
     Compute evaluation metrics for classification or regression models.
 

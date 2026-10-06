@@ -1,8 +1,10 @@
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
 from sklearn.model_selection import KFold
-from ..model_utils import ml_metrics, feature_scaling
+
 from ...config.hyper_config import config
+from ..model_utils import feature_scaling, ml_metrics
 
 
 def evaluate_model(
