@@ -1,5 +1,4 @@
-
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -12,27 +11,24 @@ class {{ dataset_class }}Preprocess(BasePreprocessor):
 
     dataset_name = "{{ dataset_name }}"
 
-    
-    def __init__(self, *, config: Optional[Dict[str, Any]] = None, **kwargs):
+    def __init__(self, *, config: dict[str, Any] | None = None, **kwargs):
         """Add attributes for the Data Preprocess like configurations and dataframe/data.
 
         Args:
-            config (Optional[Dict[str, Any]], optional):Hyper configurations or configs for data preprocessing.
-                                                        Defaults to None.
-                                                        
+            config (dict[str, Any] | None, optional):Hyper configurations or configs for data preprocessing. Defaults to None.
+
             **kwargs: Arbitrary keyword arguments.
-        
+
         Raises:
             AssertionError: If data argument is not provided in kwargs.
         """
         self.config = data_config if config is None else config
-        
+
         assert kwargs.get("data") is not None, "data argument is required"
         self.data = kwargs.get("data")
-        
+
         super().__init__(config=self.config, data=kwargs.get("data"))
 
-    
     def load(self) -> pd.DataFrame:
         """Load raw data (file, table, API, etc.).
         Returns:
@@ -41,21 +37,19 @@ class {{ dataset_class }}Preprocess(BasePreprocessor):
         if self.data is not None:
             return self.data
 
-
     def validate(self, data: pd.DataFrame) -> None:
         """Add all your validations and raise error if validations doesn't meet.
 
         Args:
             data (pd.DataFrame): Input dataframe to be validated.
         """
-        df  = data.copy()
-        
-        # 1. output of data extraction function is dataframe
-        assert isinstance(
-            df, pd.DataFrame
-        ), f"function expects a dataframe but got {type(df)}"
+        df = data.copy()
 
-    
+        # 1. output of data extraction function is dataframe
+        assert isinstance(df, pd.DataFrame), (
+            f"function expects a dataframe but got {type(df)}"
+        )
+
     def transform(self, data: pd.DataFrame) -> pd.DataFrame:
         """Transform raw input into model-ready dataframe.
         Args:

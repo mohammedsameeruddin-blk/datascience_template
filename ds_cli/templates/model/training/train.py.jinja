@@ -1,13 +1,13 @@
 from copy import deepcopy
-from typing import Any, Dict
 from pydoc import locate
+from typing import Any
 
+import catboost  # noqa: F401
 import sklearn  # noqa: F401
 import xgboost  # noqa: F401
-import catboost  # noqa: F401
 
 from ..config.hyper_config import config
-from .model_utils import ml_metrics, feature_scaling
+from .model_utils import feature_scaling, ml_metrics
 
 
 class ModelTrainer:
@@ -21,7 +21,7 @@ class ModelTrainer:
         train_df,
         test_df,
         model_name: str,
-        best_params: Dict[str, Any],
+        best_params: dict[str, Any],
         config: dict = config,
     ):
         """
@@ -41,7 +41,6 @@ class ModelTrainer:
         self.best_params = best_params
         self.config = config
 
-    
     def _resolve_model(self, model_spec):
         """
         Resolve model specification to a class or object.
@@ -62,8 +61,7 @@ class ModelTrainer:
             return cls_or_obj
         return model_spec
 
-    
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         """
         Train the selected model and evaluate performance.
 

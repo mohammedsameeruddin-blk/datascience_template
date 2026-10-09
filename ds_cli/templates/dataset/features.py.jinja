@@ -1,15 +1,15 @@
 import pandas as pd
+
+from ..config.{{ dataset_name }}_config import {{ dataset_name | upper }}_CONFIG as config
 from .transformers.imputer import SimpleImputer
 from .transformers.onehot import OneHot
-from ..config.{{ dataset_name }}_config import {{ dataset_name | upper }}_CONFIG as config
 
 
 class {{ dataset_class }}Features:
     """Feature engineering and transformation class."""
 
     dataset_name = "{{ dataset_name }}"
-    
-    
+
     def __init__(self):
         """
         Initialize DataFeatures with imputer and one-hot encoder.
@@ -17,7 +17,6 @@ class {{ dataset_class }}Features:
         self.imputer = SimpleImputer(cat_cols=config["cat_cols"])
         self.encoder = OneHot(cols=config["onehot_cols"])
 
-    
     def _engineer(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Feature engineering logic.
@@ -28,14 +27,12 @@ class {{ dataset_class }}Features:
         """
         return df
 
-    
     def fit(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self.imputer.fit_transform(df)
         df = self._engineer(df)
         df = self.encoder.fit_transform(df)
         return df
 
-    
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self.imputer.transform(df)
         df = self._engineer(df)

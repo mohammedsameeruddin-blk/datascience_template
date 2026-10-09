@@ -1,8 +1,10 @@
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
 from sklearn.model_selection import KFold
-from ..model_utils import ml_metrics, feature_scaling
+
 from ...config.hyper_config import config
+from ..model_utils import ml_metrics, feature_scaling
 
 
 def evaluate_model(
@@ -72,13 +74,15 @@ def evaluate_model(
             y_pred = model.predict(X_test)
             accu, prec, rec, roc_auc = ml_metrics(y_test, y_pred)
 
-            fold_results.append({
-                "fold": fold_idx,
-                "accuracy": accu,
-                "precision": prec,
-                "recall": rec,
-                "roc_auc": roc_auc,
-            })
+            fold_results.append(
+                {
+                    "fold": fold_idx,
+                    "accuracy": accu,
+                    "precision": prec,
+                    "recall": rec,
+                    "roc_auc": roc_auc,
+                }
+            )
 
             metrics_store["accuracy"].append(accu)
             metrics_store["precision"].append(prec)
@@ -89,13 +93,15 @@ def evaluate_model(
             y_pred = model.predict(X_test)
             mae, r2, mse, mape = ml_metrics(y_test, y_pred)
 
-            fold_results.append({
-                "fold": fold_idx,
-                "mae": mae,
-                "r2": r2,
-                "mse": mse,
-                "mape": mape,
-            })
+            fold_results.append(
+                {
+                    "fold": fold_idx,
+                    "mae": mae,
+                    "r2": r2,
+                    "mse": mse,
+                    "mape": mape,
+                }
+            )
 
             metrics_store["mae"].append(mae)
             metrics_store["r2"].append(r2)
@@ -103,8 +109,7 @@ def evaluate_model(
             metrics_store["mape"].append(mape)
 
     mean_metrics = {
-        f"mean_{k}": float(np.mean(v))
-        for k, v in metrics_store.items() if v
+        f"mean_{k}": float(np.mean(v)) for k, v in metrics_store.items() if v
     }
 
     return {

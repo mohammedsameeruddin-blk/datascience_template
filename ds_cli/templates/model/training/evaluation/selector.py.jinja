@@ -1,9 +1,11 @@
+from pydoc import locate
+
+import catboost  # noqa: F401
 import sklearn  # noqa: F401
 import xgboost  # noqa: F401
-import catboost  # noqa: F401
-from pydoc import locate
-from .evaluator import evaluate_model
+
 from ...config.hyper_config import config, METRIC_DIRECTION
+from .evaluator import evaluate_model
 
 
 class ModelEvaluator:
@@ -26,7 +28,6 @@ class ModelEvaluator:
         self.train_df = train_df
         self.tuning_results = tuning_results
 
-    
     def _select_best_model(self, results):
         """
         Select the best model based on the configured selection metric.
@@ -40,8 +41,6 @@ class ModelEvaluator:
                 - best_model (str): Name of the best-performing model
                 - best_score (float): Best value of the selection metric
         """
-        model_type = self.config["model_type"]
-
         metric = self.config["model_params"]["selection_metric"]
         direction = METRIC_DIRECTION[metric]
 
@@ -61,8 +60,7 @@ class ModelEvaluator:
                     best_model = model_name
 
         return best_model, best_score
-    
-    
+
     def _resolve_model(self, model_spec):
         """
         Resolve model specification into a callable model class or object.
@@ -80,7 +78,6 @@ class ModelEvaluator:
             return cls_or_obj
         return model_spec
 
-    
     def run(self):
         """
         Run model evaluation for all configured models and select the best one.
@@ -96,9 +93,7 @@ class ModelEvaluator:
                 - selection_metric (str): Metric used for model selection
                 - selection_value (float): Best value of the selection metric
         """
-        X = self.train_df.drop(
-            self.config["model_params"]["redu_col"], axis=1
-        )
+        X = self.train_df.drop(self.config["model_params"]["redu_col"], axis=1)
         y = self.train_df[self.config["model_params"]["target"]]
 
         evaluation_results = {}
@@ -106,11 +101,11 @@ class ModelEvaluator:
         for model_key, model_cfg in self.config["models"].items():
             model_name = model_cfg.get("name", model_key)
             model_spec = model_cfg.get("model")
-            
+
             assert model_spec is not None, (
                 f"Model specification missing for {model_name}"
             )
-            
+
             tuning_params = model_cfg["tuning_param"]
             best_params = self.tuning_results[model_name]["best_params"]
 
