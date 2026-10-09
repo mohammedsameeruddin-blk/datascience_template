@@ -1,5 +1,4 @@
 import sklearn, xgboost, catboost  # noqa
-from hyperopt import hp
 
 
 METRIC_DIRECTION = {
@@ -14,6 +13,12 @@ METRIC_DIRECTION = {
     "rmse": "min",
 }
 
+
+# Optuna search space uses plain dicts
+# Each param spec has a "type" key:
+#   - "categorical": trial.suggest_categorical  -> requires "choices"
+#   - "float":       trial.suggest_float        -> requires "low", "high"
+#   - "int":         trial.suggest_int          -> requires "low", "high"
 
 config = {
     "model_type": "{{ model_type }}",  # classification | regression
@@ -43,12 +48,12 @@ config = {
             "model": "{{ 'sklearn.ensemble.RandomForestClassifier()' if model_type == 'Classification' else 'sklearn.ensemble.RandomForestRegressor()' }}",
             "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
-                "max_features": hp.choice("max_features", ["log2", "sqrt"]),
-                "max_depth": hp.choice("max_depth", [10, 25, 50, 100]),
-                "min_samples_split": hp.choice("min_samples_split", [2, 5, 8, 10]),
-                "min_samples_leaf": hp.choice("min_samples_leaf", [1, 2, 4, 7]),
-                "bootstrap": hp.choice("bootstrap", [True, False]),
-                "random_state": hp.choice("random_state", [42]),
+                "max_features": {"type": "categorical", "choices": ["log2", "sqrt"]},
+                "max_depth": {"type": "categorical", "choices": [10, 25, 50, 100]},
+                "min_samples_split": {"type": "categorical", "choices": [2, 5, 8, 10]},
+                "min_samples_leaf": {"type": "categorical", "choices": [1, 2, 4, 7]},
+                "bootstrap": {"type": "categorical", "choices": [True, False]},
+                "random_state": {"type": "categorical", "choices": [42]},
             },
         },
         "model2": {
@@ -56,11 +61,14 @@ config = {
             "model": "{{ 'xgboost.XGBClassifier()' if model_type == 'Classification' else 'xgboost.XGBRegressor()' }}",
             "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
-                "max_depth": hp.choice("max_depth", [3, 5, 6, 10, 15, 20]),
-                "learning_rate": hp.choice("learning_rate", [0.01, 0.1, 0.2, 0.3]),
-                "subsample": hp.uniform("subsample", 0.5, 1.0),
-                "n_estimators": hp.choice("n_estimators", [50, 100]),
-                "random_state": hp.choice("random_state", [42]),
+                "max_depth": {"type": "categorical", "choices": [3, 5, 6, 10, 15, 20]},
+                "learning_rate": {
+                    "type": "categorical",
+                    "choices": [0.01, 0.1, 0.2, 0.3],
+                },
+                "subsample": {"type": "float", "low": 0.5, "high": 1.0},
+                "n_estimators": {"type": "categorical", "choices": [50, 100]},
+                "random_state": {"type": "categorical", "choices": [42]},
             },
         },
         "model3": {
@@ -68,12 +76,12 @@ config = {
             "model": "{{ 'catboost.CatBoostClassifier()' if model_type == 'Classification' else 'catboost.CatBoostRegressor()' }}",
             "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
-                "depth": hp.choice("depth", [6, 8, 10]),
-                "learning_rate": hp.choice("learning_rate", [0.01, 0.05, 0.1]),
-                "iterations": hp.choice("iterations", [50, 100]),
-                "verbose": hp.choice("verbose", [False]),
-                "allow_writing_files": hp.choice("allow_files", [False]),
-                "random_state": hp.choice("random_state", [42]),
+                "depth": {"type": "categorical", "choices": [6, 8, 10]},
+                "learning_rate": {"type": "categorical", "choices": [0.01, 0.05, 0.1]},
+                "iterations": {"type": "categorical", "choices": [50, 100]},
+                "verbose": {"type": "categorical", "choices": [False]},
+                "allow_writing_files": {"type": "categorical", "choices": [False]},
+                "random_state": {"type": "categorical", "choices": [42]},
             },
         },
     },

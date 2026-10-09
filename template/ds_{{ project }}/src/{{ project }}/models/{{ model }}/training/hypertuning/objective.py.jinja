@@ -3,43 +3,58 @@ from copy import deepcopy
 import numpy as np
 from sklearn.model_selection import KFold
 
-from ...config.hyper_config import METRIC_DIRECTION, config
+from ...config.hyper_config import config
 from ..model_utils import feature_scaling, ml_metrics
 
 
-def hyperopt_objective(
-    params,
-    model_cls,
-    X,
-    y,
-    tuning_params,
-):
+def _suggest_params(trial, hyperparameters: dict) -> dict:
     """
-    Objective function for hyperparameter optimization.
+    Translate hyper_config space specs into Optuna trial.suggest_* calls.
 
-    This function performs inner cross-validation using the provided
-    hyperparameters, evaluates model performance based on the configured
-    selection metric, and returns a loss value for optimization.
+    Supported types:
+        - "categorical": trial.suggest_categorical  (requires "choices")
+        - "float":       trial.suggest_float        (requires "low", "high")
+        - "int":         trial.suggest_int          (requires "low", "high")
+    """
+    params = {}
+    for name, spec in hyperparameters.items():
+        t = spec["type"]
+        if t == "categorical":
+            params[name] = trial.suggest_categorical(name, spec["choices"])
+        elif t == "float":
+            params[name] = trial.suggest_float(name, spec["low"], spec["high"])
+        elif t == "int":
+            params[name] = trial.suggest_int(name, spec["low"], spec["high"])
+        else:
+            raise ValueError(
+                f"Unsupported hyperparameter type: {t!r} for param {name!r}"
+            )
+    return params
+
+
+def optuna_objective(trial, model_cls, X, y, tuning_params, hyperparameters):
+    """
+    Objective function for Optuna hyperparameter optimization.
+
+    Performs inner cross-validation using the trial's suggested hyperparameters
+    and returns the selection metric value. Extra metrics are attached to the
+    trial as user attributes so the MLOps layer can read them via study.trials.
 
     Args:
-        params (dict): Hyperparameters to evaluate for the model.
+        trial: Optuna trial object.
         model_cls: Uninitialized model class or estimator template.
         X (pd.DataFrame): Feature matrix.
         y (pd.Series): Target variable.
-        tuning_params (dict): Dictionary containing tuning configuration,
-            including number of inner folds and random seed.
+        tuning_params (dict): Tuning configuration (k_inner, seed).
+        hyperparameters (dict): Space spec from hyper_config.
 
     Returns:
-        dict: Dictionary containing:
-            - loss (float): Optimization loss value.
-            - status (str): Optimization status (e.g., "ok").
-            - selection_metric (str): Metric used for optimization.
-            - selection_metric_value (float): Mean value of the selection metric.
-            - metrics (dict): Mean cross-validation metrics.
-            - params (dict): Evaluated hyperparameters.
+        float: Selection metric value (Optuna handles direction via study).
     """
     model_type = config.get("model_type")
     selection_metric = config["model_params"]["selection_metric"]
+
+    params = _suggest_params(trial, hyperparameters)
 
     cv = KFold(
         n_splits=tuning_params["k_inner"],
@@ -70,44 +85,30 @@ def hyperopt_objective(
         model.set_params(**params)
         model.fit(X_train, y_train)
 
-        if model_type == "Classification":
-            y_pred = model.predict(X_val)
-            accu, prec, rec, roc_auc = ml_metrics(y_val, y_pred)
+        y_pred = model.predict(X_val)
 
+        if model_type == "Classification":
+            accu, prec, rec, roc_auc = ml_metrics(y_val, y_pred)
             metrics_store["accuracy"].append(accu)
             metrics_store["precision"].append(prec)
             metrics_store["recall"].append(rec)
             metrics_store["roc_auc"].append(roc_auc)
-
         else:
-            y_pred = model.predict(X_val)
             mae, r2, mse, mape = ml_metrics(y_val, y_pred)
-
             metrics_store["mae"].append(mae)
             metrics_store["r2"].append(r2)
             metrics_store["mse"].append(mse)
             metrics_store["mape"].append(mape)
 
-    # Aggregation
     mean_metrics = {k: float(np.mean(v)) for k, v in metrics_store.items() if v}
-
     selected_value = mean_metrics[selection_metric]
 
-    # Calculate loss
-    direction = METRIC_DIRECTION.get(selection_metric)
-    if direction is None:
-        raise ValueError(f"Unsupported selection_metric: {selection_metric}")
+    # Attach extra data to the trial
+    trial.set_user_attr("metrics", mean_metrics)
+    trial.set_user_attr("params", params)
+    trial.set_user_attr("selection_metric", selection_metric)
+    trial.set_user_attr("selection_metric_value", selected_value)
 
-    if direction == "max":
-        loss = 1 - selected_value  # maximize
-    else:
-        loss = selected_value  # minimize
-
-    return {
-        "loss": loss,
-        "status": "ok",
-        "selection_metric": selection_metric,
-        "selection_metric_value": selected_value,
-        "metrics": mean_metrics,
-        "params": params,
-    }
+    # Return bare float — Optuna reads this, not a dict.
+    # Direction (max/min) is set on the study in tuner.py.
+    return selected_value
