@@ -93,7 +93,7 @@ def optuna_objective(trial, model_cls, X, y, tuning_params, hyperparameters):
             metrics_store["precision"].append(prec)
             metrics_store["recall"].append(rec)
             metrics_store["roc_auc"].append(roc_auc)
-        else:
+        else:  # regression
             mae, r2, mse, mape = ml_metrics(y_val, y_pred)
             metrics_store["mae"].append(mae)
             metrics_store["r2"].append(r2)
