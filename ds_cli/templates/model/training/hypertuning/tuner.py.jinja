@@ -2,26 +2,32 @@ from functools import partial
 from pydoc import locate
 
 import catboost  # noqa: F401
-import numpy as np
+import optuna
 import pandas as pd
 import sklearn  # noqa: F401
 import xgboost  # noqa: F401
-from hyperopt import Trials, fmin, space_eval, tpe
 
+from ...config.hyper_config import METRIC_DIRECTION
 from ...config.hyper_config import config as hyper_config
-from .objective import hyperopt_objective
+from .objective import optuna_objective
+
+optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 
 class HyperparameterTuner:
     """
-    Generic hyperparameter tuner supporting classification and regression.
+    Generic hyperparameter tuner using Optuna (TPE sampler).
 
     Expects `config["models"]` entries to include:
         - name (str): Human-readable model name
         - model (str | object): Model class or import path
-        - hyperparameters (dict): Hyperopt search space
+        - hyperparameters (dict): Optuna space spec
+            (each value is {"type": ..., ...}, see hyper_config.py)
         - tuning_param / tuning_params (dict): Tuning configuration
-            (e.g., max_iter, k_inner, seed)
+            (max_iter, k_inner, seed)
+
+    The results dict shape is identical to the Hyperopt tuner so the
+    MLOps layer requires no changes when switching between the two.
     """
 
     def __init__(self, train_df: pd.DataFrame, config: dict | None = None):
@@ -65,7 +71,13 @@ class HyperparameterTuner:
             dict: Dictionary keyed by model name containing:
                 - best_params (dict)
                 - best_loss (float)
-                - trials (list)
+                - trials (list): one entry per trial, each with:
+                    - loss (float)
+                    - status (str)
+                    - selection_metric (str)
+                    - selection_metric_value (float)
+                    - metrics (dict)
+                    - params (dict)
         """
         results = {}
 
@@ -82,41 +94,51 @@ class HyperparameterTuner:
 
             model_cls = self._resolve_model(model_spec)
 
-            search_space = model_cfg.get("hyperparameters", {})
+            hyperparameters = model_cfg.get("hyperparameters", {})
             tuning_params = (
                 model_cfg.get("tuning_params") or model_cfg.get("tuning_param") or {}
             )
 
-            trials = Trials()
+            selection_metric = self.config["model_params"]["selection_metric"]
+            _dir = METRIC_DIRECTION[selection_metric]  # "max" or "min"
+            direction = "maximize" if _dir == "max" else "minimize"
+
+            study = optuna.create_study(
+                direction=direction,
+                sampler=optuna.samplers.TPESampler(seed=tuning_params.get("seed", 42)),
+            )
 
             objective_fn = partial(
-                hyperopt_objective,
+                optuna_objective,
                 model_cls=model_cls,
                 X=X,
                 y=y,
                 tuning_params=tuning_params,
+                hyperparameters=hyperparameters,
             )
 
-            best = fmin(
-                fn=objective_fn,
-                space=search_space,
-                algo=tpe.suggest,
-                max_evals=tuning_params.get("max_iter", 50),
-                trials=trials,
-                rstate=np.random.default_rng(
-                    self.config["model_params"].get("seed", 42)
-                ),
-            )
+            study.optimize(objective_fn, n_trials=tuning_params.get("max_iter", 50))
 
-            best_params = space_eval(search_space, best)
-            losses = [
-                r.get("loss") for r in trials.results if r and r.get("loss") is not None
+            # Reconstruct the same trials list shape as the Hyperopt tuner.
+            # The objective stores all extra data via trial.set_user_attr().
+            trial_results = [
+                {
+                    "loss": t.value,
+                    "status": "ok",
+                    "selection_metric": t.user_attrs.get("selection_metric"),
+                    "selection_metric_value": t.user_attrs.get(
+                        "selection_metric_value"
+                    ),
+                    "metrics": t.user_attrs.get("metrics"),
+                    "params": t.user_attrs.get("params"),
+                }
+                for t in study.trials
             ]
 
             results[model_name] = {
-                "best_params": best_params,
-                "best_loss": min(losses) if losses else None,
-                "trials": trials.results,
+                "best_params": study.best_params,
+                "best_loss": study.best_value,
+                "trials": trial_results,
             }
 
         return results

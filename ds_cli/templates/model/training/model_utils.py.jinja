@@ -43,7 +43,7 @@ def ml_metrics(actual, pred, config=config) -> tuple:
 
         return accuracy, precision, recall, roc_auc
 
-    if model_type == "regression":
+    if model_type == "Regression":
         mae = mean_absolute_error(actual, pred)
         r2 = r2_score(actual, pred)
         mse = mean_squared_error(actual, pred)
