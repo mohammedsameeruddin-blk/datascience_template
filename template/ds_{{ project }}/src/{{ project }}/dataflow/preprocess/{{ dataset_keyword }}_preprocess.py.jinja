@@ -50,8 +50,25 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
             f"function expects a dataframe but got {type(df)}"
         )
 
+    def coerce_types(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Coerce column types to match the expected schema.
+        Override to cast columns before transformation.
+        Args:
+            data (pd.DataFrame): Input dataframe.
+        Returns:
+            pd.DataFrame: Dataframe with coerced types.
+
+        Example:
+            df = data.copy()
+            df["amount"] = df["amount"].astype(float)
+            df["isFraud"] = df["isFraud"].astype(int)
+            return df
+        """
+        return data
+
     def transform(self, data: pd.DataFrame) -> pd.DataFrame:
         """Transform raw input into model-ready dataframe.
+        Add column derivations, ID generation, or any row-level transforms here.
         Args:
             data (pd.DataFrame): Input dataframe to be transformed.
         Returns:

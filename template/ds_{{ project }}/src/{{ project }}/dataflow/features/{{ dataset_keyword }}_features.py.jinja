@@ -24,6 +24,12 @@ class {{ dataset_keyword | replace('-', ' ') | replace('_', ' ') | title | repla
             df (pd.DataFrame): Input dataframe to engineer features.
         Returns:
             pd.DataFrame: Dataframe with engineered features.
+
+        Tip: break domain logic into private sub-methods and call them here.
+        Example:
+            df = self._transaction_features(df)
+            df = self._temporal_features(df)
+            df = self._aggregation_features(df)
         """
         return df
 
