@@ -22,9 +22,14 @@ METRIC_DIRECTION = {
 
 config = {
     "model_type": "{{ model_type }}",  # Classification | Regression
-    "id_col": "",  # add the unique identifier column name if any
+    # Unique identifier column — REQUIRED
+    # Used by BaseScorer.run() to preserve IDs in inference output
+    # and by the MLOps layer to register features in the feature store
+    # Example: "transaction_id", "customer_id"
+    "id_col": "",
     "model_params": {
-        # Target variable name
+        # Target variable name — provide as a single-element list
+        # Example: ["isFraud"], ["price"]
         "target": [],
         # Numerical columns combined from all datasets used in this model
         # Used for feature scaling during hyperparameter tuning and training
@@ -40,7 +45,7 @@ config = {
         "test_ratio": 0.3,
         "time_data": {"time_split": False},
         "selection_metric": "{{ 'roc_auc' if model_type == 'Classification' else 'rmse' }}",  # change the metric as per the requirement from the above lookup
-        "scaler": "standard",
+        "scaler": "standard",  # "standard" (StandardScaler) | "min_max" (MinMaxScaler)
     },
     "models": {
         "model1": {
