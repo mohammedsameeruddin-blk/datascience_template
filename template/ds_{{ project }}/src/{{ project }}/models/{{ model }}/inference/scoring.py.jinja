@@ -55,6 +55,9 @@ class BatchScoring(BaseScorer):
         This method performs lightweight preprocessing such as
         dropping unnecessary columns before scoring.
 
+        Note: id_col is already extracted and preserved by BaseScorer.run()
+        before this method is called — do not drop or handle it here.
+
         Args:
             data (pd.DataFrame): Raw input dataframe.
 

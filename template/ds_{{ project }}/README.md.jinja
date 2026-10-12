@@ -1,7 +1,72 @@
-Congratulations, {{ author_email }}!
+# {{ project }}
 
-You have successfully created/setup the project `{{ project }}` on your system. 
-
-Next, let's take a look at the files and folders inside the project.
+Welcome, {{ author_email }}! Your data science project has been set up successfully.
 
 ---
+
+## Project Structure
+
+```
+ds_{{ project }}/
+├── src/
+│   └── {{ project }}/
+│       ├── common_utils/       # Shared utility functions
+│       ├── dataflow/
+│       │   ├── config/         # Dataset column config (cat_cols, onehot_cols, thresholds)
+│       │   ├── features/       # Feature engineering classes
+│       │   │   └── transformers/
+│       │   └── preprocess/     # Data loading, validation, transformation
+│       └── models/
+│           └── {{ model }}/    # One directory per model
+│               ├── config/     # Hyperparameter search space (hyper_config.py)
+│               ├── training/   # Tuning, evaluation, model training
+│               └── inference/  # Batch scoring
+└── pyproject.toml
+```
+
+---
+
+## Adding a New Model
+
+Use `ds-cli` to scaffold a new model directory:
+
+```bash
+ds-cli add-model . --model-name <model_name> --model-type Classification
+# or
+ds-cli add-model . --model-name <model_name> --model-type Regression
+```
+
+After generation:
+1. Open `src/{{ project }}/models/<model_name>/config/hyper_config.py`
+2. Fill in `id_col`, `target`, `num_cols`, `redu_col`
+3. Adjust hyperparameter search spaces as needed
+
+---
+
+## Adding a New Dataset
+
+```bash
+ds-cli add-dataset . --dataset-name <dataset_name>
+```
+
+After generation:
+1. Open `src/{{ project }}/dataflow/config/<dataset_name>_config.py` — add domain-specific config keys
+2. Open `src/{{ project }}/dataflow/preprocess/<dataset_name>_preprocess.py` — implement `coerce_types()` and `transform()`
+3. Open `src/{{ project }}/dataflow/features/<dataset_name>_features.py` — implement `_engineer()` with your feature logic
+
+---
+
+## Removing a Model or Dataset
+
+```bash
+ds-cli remove-model . --model-name <model_name>
+ds-cli remove-dataset . --dataset-name <dataset_name>
+```
+
+---
+
+## Development Setup
+
+```bash
+uv sync --group dev
+```

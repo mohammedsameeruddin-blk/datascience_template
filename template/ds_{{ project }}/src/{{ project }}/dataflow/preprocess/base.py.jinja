@@ -8,13 +8,21 @@ class BasePreprocessor(ABC):
     """
     Base class for all data pre-processors.
 
-    Extension points:
-    - load()
-    - validate()
-    - transform()
+    Required overrides (abstract):
+    - load()       — load raw data from any source
+    - validate()   — assert input meets expectations
+    - transform()  — derive new columns, generate IDs, etc.
 
-    DO NOT override:
-    - run()
+    Optional hooks (override as needed):
+    - rename_columns()      — standardise column names
+    - coerce_types()        — cast columns to expected dtypes
+    - add_static_defaults() — fill in constant/derived columns
+    - select_columns()      — drop columns not needed downstream
+    - post_transform_hook() — any final cleanup after all steps
+
+    run() execution order (DO NOT override):
+        load → validate → transform → rename_columns → coerce_types
+        → add_static_defaults → select_columns → post_transform_hook
     """
 
     dataset_name: str = "unknown"
