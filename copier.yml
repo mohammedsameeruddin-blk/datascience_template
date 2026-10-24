@@ -77,4 +77,22 @@ _tasks:
             shutil.rmtree(str(p))
 
 _message_after_copy: |
-  Congratulations! Your project has been successfully created!
+  Your project ds_{{ project }} is ready!
+
+  Next steps:
+    1. Navigate into your project:
+         cd ds_{{ project }}
+
+    2. Install dependencies:
+         uv sync
+
+    3. Initialize git (if this is a new project):
+         git init
+         git checkout -b main
+         git add .
+         git commit -m "chore: initial project scaffold from template"
+
+    4. If updating an existing project, review the changes and commit them:
+         git diff
+         git add .
+         git commit -m "chore: update project scaffold from template"
