@@ -29,6 +29,13 @@ def sample_dataframe_large():
 
 
 @pytest.fixture
+def sample_dataframe_empty():
+    return pd.DataFrame(
+        columns=["id", "feature_num_1", "feature_num_2", "feature_cat_1", "target"]
+    )
+
+
+@pytest.fixture
 def sample_dataframe_with_nulls():
     return pd.DataFrame(
         {
