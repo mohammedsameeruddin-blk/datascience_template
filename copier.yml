@@ -14,7 +14,16 @@ _repo: "https://github.com/mohammedsameeruddin-blk/datascience_template"
 _message_before_copy: |
   Thanks for using our datascience template to bootstrap your new project.
 
-  Please, reply to the question carefully as the answers will be used to configure the scaffold of your project.
+  IMPORTANT - Naming convention:
+    Your project directory must be named  ds_<project_name>
+    Run this command from your workspace:
+
+      copier copy <template_url> ds_<project_name>
+
+    Example:
+      copier copy git@github.com:mohammedsameeruddin-blk/datascience_template.git ds_store_sales
+
+  Please reply to the questions carefully as the answers will be used to configure the scaffold of your project.
 
 # DS project info
 project:
@@ -65,37 +74,38 @@ _tasks:
       - "{{ _copier_python }}"
       - "-c"
       - |
-        import shutil, pathlib, re
-        p = pathlib.Path('ds_{{ project }}')
-        answers_path = pathlib.Path('.copier-answers.yml')
-        if p.is_dir() and answers_path.is_file():
-            for i in p.rglob('*'):
-                if i.is_file():
-                    d = pathlib.Path(i.relative_to(p))
-                    if not d.exists() or d.name == '.copier-answers.yml':
-                        d.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(str(i), str(d))
-            shutil.rmtree(str(p))
-        if answers_path.is_file():
-            txt = answers_path.read_text()
-            txt = re.sub(r'^_commit:.*$', '_commit: {{ _copier_answers._commit }}', txt, flags=re.MULTILINE)
-            answers_path.write_text(txt)
+        import pathlib, sys
+        cwd = pathlib.Path.cwd()
+        # During copier update, tasks run in a temp dir (copier._main.*) — skip validation there
+        if cwd.name.startswith('copier.') or not pathlib.Path('.copier-answers.yml').is_file():
+            sys.exit(0)
+        if not cwd.name.startswith('ds_'):
+            print('\n' + '=' * 60)
+            print('ERROR: Project directory must be named with a "ds_" prefix.')
+            print(f'  Current : {cwd.name}')
+            print(f'  Expected: ds_{{ project }}')
+            print()
+            print('Delete this directory and re-run from your workspace:')
+            print()
+            print(f'  copier copy git@github.com:mohammedsameeruddin-blk/datascience_template.git ds_{{ project }} --trust')
+            print('=' * 60 + '\n')
+            sys.exit(1)
 
 _message_after_copy: |
   Your project ds_{{ project }} is ready!
 
   Next steps:
-    1. Navigate into your project:
-         cd ds_{{ project }}
-
-    2. Install dependencies:
+    1. Install dependencies:
          uv sync
 
-    3. Initialize git (if this is a new project):
+    2. Initialize git (if this is a new project):
          git init
          git checkout -b main
          git add .
          git commit -m "chore: initial project scaffold from template"
+
+    3. To update this project when a new template version is released:
+         copier update --vcs-ref <version> --trust
 
     4. If updating an existing project, review the changes and commit them:
          git diff
