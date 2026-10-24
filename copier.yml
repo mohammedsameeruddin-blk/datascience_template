@@ -61,5 +61,11 @@ author_email:
     author_email is not a valid email address.
     {% endif %}
 
+_tasks:
+  - git init
+  - git checkout -b main
+  - git add .
+  - git commit -m "chore: initial project scaffold from template"
+
 _message_after_copy: |
   Congratulations! Your project has been successfully created!
