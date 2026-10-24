@@ -64,7 +64,7 @@ _tasks:
   - command:
       - "{{ _copier_python }}"
       - "-c"
-      - "import subprocess,os,pathlib; p=pathlib.Path('ds_{{ project }}'); [subprocess.run(c,check=True) for c in [['git','init'],['git','checkout','-b','main'],['git','add','.'],['git','commit','-m','chore: initial project scaffold from template']]] if (p.is_dir() and not os.chdir(p)) else None"
+      - "import subprocess,os,pathlib; p=pathlib.Path('ds_{{ project }}'); [subprocess.run(c,check=True) for c in [['git','init'],['git','checkout','-b','main'],['git','add','.'],['git','commit','-m','chore: initial project scaffold from template']]] if (p.is_dir() and not (p/'.git').is_dir() and not os.chdir(p)) else None"
 
 _message_after_copy: |
   Congratulations! Your project has been successfully created!
