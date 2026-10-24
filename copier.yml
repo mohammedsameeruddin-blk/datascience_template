@@ -60,11 +60,21 @@ author_email:
     author_email is not a valid email address.
     {% endif %}
 
-# _tasks:
-#   - command:
-#       - "{{ _copier_python }}"
-#       - "-c"
-#       - "import subprocess,os,pathlib; p=pathlib.Path('ds_{{ project }}'); [subprocess.run(c,check=True) for c in [['git','init'],['git','checkout','-b','main'],['git','add','.'],['git','commit','-m','chore: initial project scaffold from template']]] if (p.is_dir() and not (p/'.git').is_dir() and not os.chdir(p)) else None"
+_tasks:
+  - command:
+      - "{{ _copier_python }}"
+      - "-c"
+      - |
+        import shutil, pathlib
+        p = pathlib.Path('ds_{{ project }}')
+        if p.is_dir() and pathlib.Path('.copier-answers.yml').is_file():
+            for i in p.rglob('*'):
+                if i.is_file():
+                    d = pathlib.Path(i.relative_to(p))
+                    if not d.exists():
+                        d.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(str(i), str(d))
+            shutil.rmtree(str(p))
 
 _message_after_copy: |
   Congratulations! Your project has been successfully created!
