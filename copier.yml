@@ -67,11 +67,12 @@ _tasks:
       - |
         import shutil, pathlib
         p = pathlib.Path('ds_{{ project }}')
-        if p.is_dir() and pathlib.Path('.copier-answers.yml').is_file():
+        answers_file = '{{ _copier_conf.answers_file }}'
+        if p.is_dir() and pathlib.Path(answers_file).is_file():
             for i in p.rglob('*'):
                 if i.is_file():
                     d = pathlib.Path(i.relative_to(p))
-                    if not d.exists():
+                    if not d.exists() or i.name == answers_file:
                         d.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(str(i), str(d))
             shutil.rmtree(str(p))
