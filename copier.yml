@@ -76,6 +76,9 @@ _tasks:
       - |
         import pathlib, sys
         cwd = pathlib.Path.cwd()
+        # During copier update, tasks run in a temp dir (copier._main.*) — skip validation there
+        if cwd.name.startswith('copier.') or not pathlib.Path('.copier-answers.yml').is_file():
+            sys.exit(0)
         if not cwd.name.startswith('ds_'):
             print('\n' + '=' * 60)
             print('ERROR: Project directory must be named with a "ds_" prefix.')
