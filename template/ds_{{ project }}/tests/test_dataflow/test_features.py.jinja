@@ -1,0 +1,28 @@
+import pytest
+import pandas as pd
+from {{ project }}.dataflow.features.{{ dataset_keyword }}_features import (
+    {{ dataset_keyword | title | replace('_', '') }}Features,
+)
+
+
+class Test{{ dataset_keyword | title | replace('_', '') }}Features:
+    def test_instantiation(self):
+        features = {{ dataset_keyword | title | replace('_', '') }}Features()
+        assert features is not None
+
+    def test_has_required_methods(self):
+        features = {{ dataset_keyword | title | replace('_', '') }}Features()
+        assert hasattr(features, "fit")
+        assert hasattr(features, "transform")
+
+    def test_fit_returns_self(self, sample_dataframe):
+        features = {{ dataset_keyword | title | replace('_', '') }}Features()
+        result = features.fit(sample_dataframe)
+        assert result is features
+
+    def test_transform_returns_dataframe(self, sample_dataframe):
+        features = {{ dataset_keyword | title | replace('_', '') }}Features()
+        features.fit(sample_dataframe)
+        result = features.transform(sample_dataframe)
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == len(sample_dataframe)
