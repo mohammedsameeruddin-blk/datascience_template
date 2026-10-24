@@ -36,6 +36,19 @@ def sample_dataframe_empty():
 
 
 @pytest.fixture
+def sample_dataframe_sorted():
+    return pd.DataFrame(
+        {
+            "id": [5, 3, 1, 4, 2],
+            "feature_num_1": [0.5, 0.3, 0.1, 0.4, 0.2],
+            "feature_num_2": [50, 30, 10, 40, 20],
+            "feature_cat_1": ["a", "a", "a", "b", "b"],
+            "target": [0, 0, 0, 1, 1],
+        }
+    )
+
+
+@pytest.fixture
 def sample_dataframe_with_nulls():
     return pd.DataFrame(
         {
