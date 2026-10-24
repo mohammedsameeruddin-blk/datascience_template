@@ -74,12 +74,19 @@ _tasks:
       - "{{ _copier_python }}"
       - "-c"
       - |
-        import pathlib
+        import pathlib, sys
         cwd = pathlib.Path.cwd()
         if not cwd.name.startswith('ds_'):
-            print(f"\nWARNING: Directory '{cwd.name}' does not follow the naming convention.")
-            print(f"         Expected: ds_{{ project }}")
-            print(f"         Rename the directory to avoid issues.\n")
+            print('\n' + '=' * 60)
+            print('ERROR: Project directory must be named with a "ds_" prefix.')
+            print(f'  Current : {cwd.name}')
+            print(f'  Expected: ds_{{ project }}')
+            print()
+            print('Delete this directory and re-run from your workspace:')
+            print()
+            print(f'  copier copy git@github.com:mohammedsameeruddin-blk/datascience_template.git ds_{{ project }} --trust')
+            print('=' * 60 + '\n')
+            sys.exit(1)
 
 _message_after_copy: |
   Your project ds_{{ project }} is ready!
