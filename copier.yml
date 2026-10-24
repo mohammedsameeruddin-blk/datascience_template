@@ -65,17 +65,21 @@ _tasks:
       - "{{ _copier_python }}"
       - "-c"
       - |
-        import shutil, pathlib
+        import shutil, pathlib, re
         p = pathlib.Path('ds_{{ project }}')
-        answers_file = '{{ _copier_conf.answers_file }}'
-        if p.is_dir() and pathlib.Path(answers_file).is_file():
+        answers_path = pathlib.Path('.copier-answers.yml')
+        if p.is_dir() and answers_path.is_file():
             for i in p.rglob('*'):
                 if i.is_file():
                     d = pathlib.Path(i.relative_to(p))
-                    if not d.exists() or i.name == answers_file:
+                    if not d.exists() or d.name == '.copier-answers.yml':
                         d.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(str(i), str(d))
             shutil.rmtree(str(p))
+        if answers_path.is_file():
+            txt = answers_path.read_text()
+            txt = re.sub(r'^_commit:.*$', '_commit: {{ _copier_answers._commit }}', txt, flags=re.MULTILINE)
+            answers_path.write_text(txt)
 
 _message_after_copy: |
   Your project ds_{{ project }} is ready!
