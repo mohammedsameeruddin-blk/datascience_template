@@ -65,7 +65,7 @@ _tasks:
   - command: git init
   - command: git checkout -b main
   - command: git add .
-  - command: "git commit -m 'chore: initial project scaffold from template'"
+  - command: [git, commit, -m, "chore: initial project scaffold from template"]
 
 _message_after_copy: |
   Congratulations! Your project has been successfully created!
