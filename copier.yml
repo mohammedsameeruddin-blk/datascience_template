@@ -10,7 +10,6 @@ _envops:
   lstrip_blocks: true
 
 _repo: "https://github.com/mohammedsameeruddin-blk/datascience_template"
-_revision: feature/ds_template
 
 _message_before_copy: |
   Thanks for using our datascience template to bootstrap your new project.
