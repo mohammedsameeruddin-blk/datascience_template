@@ -16,6 +16,19 @@ def sample_dataframe():
 
 
 @pytest.fixture
+def sample_dataframe_large():
+    return pd.DataFrame(
+        {
+            "id": list(range(1, 101)),
+            "feature_num_1": [i * 0.1 for i in range(100)],
+            "feature_num_2": list(range(100)),
+            "feature_cat_1": ["a" if i % 2 == 0 else "b" for i in range(100)],
+            "target": [i % 2 for i in range(100)],
+        }
+    )
+
+
+@pytest.fixture
 def sample_dataframe_with_nulls():
     return pd.DataFrame(
         {
