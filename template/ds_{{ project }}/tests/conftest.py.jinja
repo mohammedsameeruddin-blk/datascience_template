@@ -1,0 +1,28 @@
+import pytest
+import pandas as pd
+
+
+@pytest.fixture
+def sample_dataframe():
+    return pd.DataFrame(
+        {
+            "id": [1, 2, 3, 4, 5],
+            "feature_num_1": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "feature_num_2": [10, 20, 30, 40, 50],
+            "feature_cat_1": ["a", "b", "a", "b", "a"],
+            "target": [0, 1, 0, 1, 0],
+        }
+    )
+
+
+@pytest.fixture
+def sample_dataframe_with_nulls():
+    return pd.DataFrame(
+        {
+            "id": [1, 2, 3, 4, 5],
+            "feature_num_1": [0.1, None, 0.3, None, 0.5],
+            "feature_num_2": [10, 20, None, 40, 50],
+            "feature_cat_1": ["a", None, "a", "b", None],
+            "target": [0, 1, 0, 1, 0],
+        }
+    )
