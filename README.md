@@ -97,10 +97,14 @@ ds_<project_name>/
 │       └── models/
 │           └── <model>/
 │               ├── config/
+│               │   ├── hyper_config.py
+│               │   └── model_pipeline.py
 │               ├── inference/
 │               └── training/
 │                   ├── evaluation/
-│                   └── hypertuning/
+│                   ├── hypertuning/
+│                   ├── model_utils.py
+│                   └── train.py
 ├── pyproject.toml
 ├── README.md
 └── .copier-answers.yml
@@ -110,4 +114,5 @@ ds_<project_name>/
 
 | Version | Notes |
 |---|---|
+| `v1.1.0` | Added `model_pipeline.py` — sklearn Pipeline factory functions for inference-time transforms; `feature_scaling()` skips when `scaler=None`; `enable` flag per model in `hyper_config.py` to skip a model without removing its config |
 | `v1.0.0` | Initial release — restructured template, naming validation, `copier update` support |
