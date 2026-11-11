@@ -1,5 +1,6 @@
 from sklearn.metrics import (
     accuracy_score,
+    f1_score,
     mean_absolute_error,
     mean_absolute_percentage_error,
     mean_squared_error,
@@ -13,7 +14,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from ..config.hyper_config import config
 
 
-def ml_metrics(actual, pred, config=config) -> tuple:
+def ml_metrics(actual, pred, config=config) -> dict:
     """
     Compute evaluation metrics for classification or regression models.
 
@@ -26,9 +27,10 @@ def ml_metrics(actual, pred, config=config) -> tuple:
             `model_type`. Defaults to global config.
 
     Returns:
-        Tuple:
-            - Classification: (accuracy, precision, recall, roc_auc)
-            - Regression: (mae, r2, mse, mape)
+        dict:
+            - Classification: accuracy, precision, recall, f1_macro,
+              f1_weighted, roc_auc
+            - Regression: mae, r2, mse, mape
 
     Raises:
         ValueError: If unsupported model type is provided.
@@ -36,20 +38,26 @@ def ml_metrics(actual, pred, config=config) -> tuple:
     model_type = config.get("model_type")
 
     if model_type == "Classification":
-        accuracy = accuracy_score(actual, pred)
-        precision = precision_score(actual, pred)
-        recall = recall_score(actual, pred)
-        roc_auc = roc_auc_score(actual, pred)
-
-        return accuracy, precision, recall, roc_auc
+        # average="macro" treats all classes equally regardless of support.
+        # zero_division=0 avoids warnings on classes with no predicted samples.
+        return {
+            "accuracy": accuracy_score(actual, pred),
+            "precision": precision_score(
+                actual, pred, average="macro", zero_division=0
+            ),
+            "recall": recall_score(actual, pred, average="macro", zero_division=0),
+            "f1_macro": f1_score(actual, pred, average="macro", zero_division=0),
+            "f1_weighted": f1_score(actual, pred, average="weighted", zero_division=0),
+            "roc_auc": roc_auc_score(actual, pred, average="macro", multi_class="ovr"),
+        }
 
     if model_type == "Regression":
-        mae = mean_absolute_error(actual, pred)
-        r2 = r2_score(actual, pred)
-        mse = mean_squared_error(actual, pred)
-        mape = mean_absolute_percentage_error(actual, pred)
-
-        return mae, r2, mse, mape
+        return {
+            "mae": mean_absolute_error(actual, pred),
+            "r2": r2_score(actual, pred),
+            "mse": mean_squared_error(actual, pred),
+            "mape": mean_absolute_percentage_error(actual, pred),
+        }
 
     raise ValueError(f"Unsupported model_type: {model_type}")
 
@@ -70,9 +78,16 @@ def feature_scaling(df_train, df_test, config=config):
         Tuple:
             - pd.DataFrame: Scaled training dataframe
             - pd.DataFrame: Scaled test dataframe
-            - object: Fitted scaler instance
+            - object: Fitted scaler instance (None if scaling is skipped)
     """
-    scaler_type = config["model_params"].get("scaler", "standard")
+    selected_columns = config["model_params"]["num_cols"]
+    scaler_type = config["model_params"].get("scaler")
+
+    # Skip scaling when num_cols is empty or scaler is None.
+    # This is the case when scaling is handled internally by a Pipeline
+    # (e.g. a ColumnTransformer inside model_pipeline.py).
+    if not selected_columns or scaler_type is None:
+        return df_train, df_test, None
 
     if scaler_type == "standard":
         scaler = StandardScaler()
@@ -80,8 +95,6 @@ def feature_scaling(df_train, df_test, config=config):
         scaler = MinMaxScaler()
     else:
         scaler = StandardScaler()
-
-    selected_columns = config["model_params"]["num_cols"]
 
     df_train[selected_columns] = scaler.fit_transform(df_train[selected_columns])
     df_test[selected_columns] = scaler.transform(df_test[selected_columns])

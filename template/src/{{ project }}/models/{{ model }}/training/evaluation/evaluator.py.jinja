@@ -51,6 +51,8 @@ def evaluate_model(
         "accuracy": [],
         "precision": [],
         "recall": [],
+        "f1_macro": [],
+        "f1_weighted": [],
         "roc_auc": [],
         "mae": [],
         "mse": [],
@@ -70,43 +72,44 @@ def evaluate_model(
         model.set_params(**best_params)
         model.fit(X_train, y_train)
 
-        if model_type == "Classification":
-            y_pred = model.predict(X_test)
-            accu, prec, rec, roc_auc = ml_metrics(y_test, y_pred)
+        y_pred = model.predict(X_test)
+        m = ml_metrics(y_test, y_pred)
 
+        if model_type == "Classification":
             fold_results.append(
                 {
                     "fold": fold_idx,
-                    "accuracy": accu,
-                    "precision": prec,
-                    "recall": rec,
-                    "roc_auc": roc_auc,
+                    "accuracy": m["accuracy"],
+                    "precision": m["precision"],
+                    "recall": m["recall"],
+                    "f1_macro": m["f1_macro"],
+                    "f1_weighted": m["f1_weighted"],
+                    "roc_auc": m["roc_auc"],
                 }
             )
 
-            metrics_store["accuracy"].append(accu)
-            metrics_store["precision"].append(prec)
-            metrics_store["recall"].append(rec)
-            metrics_store["roc_auc"].append(roc_auc)
+            metrics_store["accuracy"].append(m["accuracy"])
+            metrics_store["precision"].append(m["precision"])
+            metrics_store["recall"].append(m["recall"])
+            metrics_store["f1_macro"].append(m["f1_macro"])
+            metrics_store["f1_weighted"].append(m["f1_weighted"])
+            metrics_store["roc_auc"].append(m["roc_auc"])
 
         else:  # regression
-            y_pred = model.predict(X_test)
-            mae, r2, mse, mape = ml_metrics(y_test, y_pred)
-
             fold_results.append(
                 {
                     "fold": fold_idx,
-                    "mae": mae,
-                    "r2": r2,
-                    "mse": mse,
-                    "mape": mape,
+                    "mae": m["mae"],
+                    "r2": m["r2"],
+                    "mse": m["mse"],
+                    "mape": m["mape"],
                 }
             )
 
-            metrics_store["mae"].append(mae)
-            metrics_store["r2"].append(r2)
-            metrics_store["mse"].append(mse)
-            metrics_store["mape"].append(mape)
+            metrics_store["mae"].append(m["mae"])
+            metrics_store["r2"].append(m["r2"])
+            metrics_store["mse"].append(m["mse"])
+            metrics_store["mape"].append(m["mape"])
 
     mean_metrics = {
         f"mean_{k}": float(np.mean(v)) for k, v in metrics_store.items() if v
