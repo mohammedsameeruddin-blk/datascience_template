@@ -85,6 +85,9 @@ class HyperparameterTuner:
         y = self.train_df[self.config["model_params"]["target"]]
 
         for model_key, model_cfg in self.config["models"].items():
+            if not model_cfg.get("enable", True):
+                continue
+
             model_name = model_cfg.get("name", model_key)
             model_spec = model_cfg.get("model")
 

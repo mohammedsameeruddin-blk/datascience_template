@@ -66,6 +66,8 @@ def optuna_objective(trial, model_cls, X, y, tuning_params, hyperparameters):
         "accuracy": [],
         "precision": [],
         "recall": [],
+        "f1_macro": [],
+        "f1_weighted": [],
         "roc_auc": [],
         "mae": [],
         "mse": [],
@@ -86,19 +88,20 @@ def optuna_objective(trial, model_cls, X, y, tuning_params, hyperparameters):
         model.fit(X_train, y_train)
 
         y_pred = model.predict(X_val)
+        m = ml_metrics(y_val, y_pred)
 
         if model_type == "Classification":
-            accu, prec, rec, roc_auc = ml_metrics(y_val, y_pred)
-            metrics_store["accuracy"].append(accu)
-            metrics_store["precision"].append(prec)
-            metrics_store["recall"].append(rec)
-            metrics_store["roc_auc"].append(roc_auc)
+            metrics_store["accuracy"].append(m["accuracy"])
+            metrics_store["precision"].append(m["precision"])
+            metrics_store["recall"].append(m["recall"])
+            metrics_store["f1_macro"].append(m["f1_macro"])
+            metrics_store["f1_weighted"].append(m["f1_weighted"])
+            metrics_store["roc_auc"].append(m["roc_auc"])
         else:  # regression
-            mae, r2, mse, mape = ml_metrics(y_val, y_pred)
-            metrics_store["mae"].append(mae)
-            metrics_store["r2"].append(r2)
-            metrics_store["mse"].append(mse)
-            metrics_store["mape"].append(mape)
+            metrics_store["mae"].append(m["mae"])
+            metrics_store["r2"].append(m["r2"])
+            metrics_store["mse"].append(m["mse"])
+            metrics_store["mape"].append(m["mape"])
 
     mean_metrics = {k: float(np.mean(v)) for k, v in metrics_store.items() if v}
     selected_value = mean_metrics[selection_metric]
