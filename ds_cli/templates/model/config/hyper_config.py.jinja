@@ -5,6 +5,8 @@ METRIC_DIRECTION = {
     "accuracy": "max",
     "precision": "max",
     "recall": "max",
+    "f1_macro": "max",
+    "f1_weighted": "max",
     "roc_auc": "max",
     "r2": "max",
     "mae": "min",
@@ -50,6 +52,7 @@ config = {
     "models": {
         "model1": {
             "name": "RandomForest",
+            "enable": True,
             "model": "{{ 'sklearn.ensemble.RandomForestClassifier()' if model_type == 'Classification' else 'sklearn.ensemble.RandomForestRegressor()' }}",
             "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
@@ -63,6 +66,7 @@ config = {
         },
         "model2": {
             "name": "XGBoost",
+            "enable": True,
             "model": "{{ 'xgboost.XGBClassifier()' if model_type == 'Classification' else 'xgboost.XGBRegressor()' }}",
             "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {
@@ -78,6 +82,7 @@ config = {
         },
         "model3": {
             "name": "CatBoost",
+            "enable": True,
             "model": "{{ 'catboost.CatBoostClassifier()' if model_type == 'Classification' else 'catboost.CatBoostRegressor()' }}",
             "tuning_param": {"max_iter": 10, "k_inner": 3, "k_outer": 5, "seed": 123},
             "hyperparameters": {

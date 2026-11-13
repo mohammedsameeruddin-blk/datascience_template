@@ -1,0 +1,91 @@
+# model_pipeline.py
+#
+# This module provides factory functions that return a fully assembled
+# sklearn Pipeline for each model in hyper_config.py.
+#
+# WHY use a Pipeline here instead of bare estimators?
+# --------------------------------------------------
+# Wrapping the preprocessor + estimator in a single Pipeline means:
+#   - fit() and predict() go through the same transformation steps
+#   - Hyperparameter names are prefixed with the step name, e.g.
+#     "clf__C" for the estimator's C parameter
+#   - Cross-validation folds never leak preprocessor state from train to val
+#
+# WHAT BELONGS HERE vs. OTHER FILES
+# -----------------------------------
+# model_pipeline.py is ONLY for transformations that must be applied at
+# inference time and need to be serialized with the model (e.g. a TF-IDF
+# fitted on training text, or a scaler fitted on training numeric columns).
+#
+# Domain-specific preprocessing and feature engineering belong in:
+#   - {{ dataset_keyword }}_preprocess.py  — raw data cleaning, deduplication, imputation
+#   - {{ dataset_keyword }}_features.py    — feature creation and aggregation
+# Those run once offline and produce a clean feature table saved to storage.
+# model_pipeline.py only sees that clean feature table as its input.
+#
+# HOW TO CUSTOMIZE FOR YOUR PROJECT
+# -----------------------------------
+# 1. For numeric-only features, the pipeline just wraps the estimator.
+#    Scaling is already handled by feature_scaling() in model_utils.py
+#    (controlled by "scaler" in hyper_config.py).
+#    In this case, keep "num_cols" and "scaler" set in hyper_config and
+#    remove the scaler step from the pipeline here:
+#
+#       def make_logreg_pipeline() -> Pipeline:
+#           return Pipeline([("clf", LogisticRegression(...))])
+#
+# 2. For mixed feature types (e.g. text + numeric), add a ColumnTransformer
+#    so the fitted vectorizer/scaler travels with the model at inference time:
+#
+#       from sklearn.compose import ColumnTransformer
+#       from sklearn.feature_extraction.text import TfidfVectorizer
+#
+#       def _make_preprocessor() -> ColumnTransformer:
+#           return ColumnTransformer([
+#               ("tfidf", TfidfVectorizer(...), "text_column"),
+#               ("num", StandardScaler(), NUMERIC_COLS),
+#           ])
+#
+#    In this case set "num_cols": [] and "scaler": None in hyper_config
+#    to skip the external feature_scaling() step (scaling is now inside
+#    the pipeline and handled during fit/predict automatically).
+#
+# 3. Update hyper_config.py "model" keys to call the factory:
+#
+#       from .model_pipeline import make_logreg_pipeline, make_randomforest_pipeline
+#       "model": make_logreg_pipeline(),
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+
+def make_logreg_pipeline() -> Pipeline:
+    """
+    Logistic Regression pipeline with standard scaling.
+
+    Hyperparameter prefix in hyper_config: "clf__"
+    Example: "clf__C", "clf__solver"
+    """
+    return Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("clf", LogisticRegression(max_iter=1000, solver="lbfgs")),
+        ]
+    )
+
+
+def make_randomforest_pipeline() -> Pipeline:
+    """
+    Random Forest pipeline — tree-based models do not require scaling,
+    but the step is kept as a no-op passthrough for a consistent interface.
+
+    Hyperparameter prefix in hyper_config: "clf__"
+    Example: "clf__max_depth", "clf__n_estimators"
+    """
+    return Pipeline(
+        [
+            ("clf", RandomForestClassifier(random_state=42)),
+        ]
+    )
